@@ -38,13 +38,16 @@ function scaledCanvas(img, maxSide) {
 }
 
 export class PhotoPicker {
-  // maxPicks: how many colours can be picked at once. A new pick past
-  // the limit replaces the oldest. 0 turns picking off.
-  constructor(canvas, { maxPicks = 1, onChange = () => {} } = {}) {
+  // maxPicks: how many colours can be picked at once. 0 turns picking off.
+  // replaceWhenFull: when the limit is reached, a new pick replaces the
+  // oldest (true) or is refused and onFull is called (false).
+  constructor(canvas, { maxPicks = 1, replaceWhenFull = true, onChange = () => {}, onFull = () => {} } = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.maxPicks = maxPicks;
+    this.replaceWhenFull = replaceWhenFull;
     this.onChange = onChange;
+    this.onFull = onFull;
     this.work = null;
     this.workCtx = null;
     this.base = null;
@@ -80,6 +83,12 @@ export class PhotoPicker {
 
   clearPicks() {
     this.picks = [];
+    this.#redraw();
+    this.onChange(this.picks);
+  }
+
+  removePick(index) {
+    this.picks.splice(index, 1);
     this.#redraw();
     this.onChange(this.picks);
   }
@@ -161,6 +170,12 @@ export class PhotoPicker {
       if (box.w >= MIN_BOX && box.h >= MIN_BOX) shape = box;
     }
     if (!shape) shape = { type: "circle", x: g.start.x, y: g.start.y, r: TAP_RADIUS };
+
+    if (this.picks.length >= this.maxPicks && !this.replaceWhenFull) {
+      this.#redraw(); // clear the drag box
+      this.onFull();
+      return;
+    }
 
     const lab = dominantColour(this.#pixelsIn(shape));
     if (lab) {
@@ -265,18 +280,34 @@ function drawMark(ctx, shape, k, px) {
   ctx.stroke(path);
 }
 
+// A numbered badge at the mark's top-right corner, so it labels the
+// mark without hiding the area that was sampled. Kept inside the photo.
 function drawLabel(ctx, shape, k, px, text) {
-  const c = shapeCentre(shape);
   const r = 10 * px;
+  let x, y;
+  if (shape.type === "circle") {
+    const d = shape.r * k * Math.SQRT1_2;
+    x = shape.x * k + d + r * 0.6;
+    y = shape.y * k - d - r * 0.6;
+  } else {
+    x = (shape.x + shape.w) * k;
+    y = shape.y * k;
+  }
+  x = clamp(x, r, ctx.canvas.width - r);
+  y = clamp(y, r, ctx.canvas.height - r);
+
   ctx.beginPath();
-  ctx.arc(c.x * k, c.y * k, r, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
   ctx.fill();
+  ctx.lineWidth = 1.5 * px;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
   ctx.fillStyle = "#ffffff";
   ctx.font = `600 ${12 * px}px Inter, system-ui, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, c.x * k, c.y * k + 0.5 * px);
+  ctx.fillText(text, x, y + 0.5 * px);
 }
 
 function shapeCentre(shape) {

@@ -342,6 +342,78 @@ main {
 }
 
 /* ---------------------------------------------------------------
+   Outfit pieces and notices
+   --------------------------------------------------------------- */
+.piece-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.piece-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.piece-row:last-child {
+  border-bottom: none;
+}
+
+.piece-num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.piece-row .swatch {
+  width: 36px;
+  height: 36px;
+}
+
+.piece-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.piece-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.notice p {
+  font-size: 15px;
+}
+
+.notice .btn {
+  align-self: flex-start;
+  min-height: 44px;
+}
+
+/* ---------------------------------------------------------------
    Closet grid
    --------------------------------------------------------------- */
 .closet-grid {

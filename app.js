@@ -29,6 +29,7 @@ function showScreen(name) {
     if (active) tab.setAttribute("aria-current", "page");
     else tab.removeAttribute("aria-current");
   }
+  if (name === "match") updateMatchNotice();
   window.scrollTo({ top: 0 });
 }
 
@@ -287,13 +288,69 @@ dialog.addEventListener("close", () => {
 renderCloset();
 
 // ---------------------------------------------------------------
-// Match screen
+// Match screen: picking outfit colours
 // ---------------------------------------------------------------
 const matchEmpty = document.getElementById("matchEmpty");
+const matchNeedsCloset = document.getElementById("matchNeedsCloset");
 const outfitPanel = document.getElementById("outfitPanel");
+const outfitHint = document.getElementById("outfitHint");
+const pieceList = document.getElementById("pieceList");
 
-// Picking outfit pieces arrives on Day 3; for now the photo just shows.
-const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), { maxPicks: 0 });
+const OUTFIT_HINT =
+  "Tap up to 3 pieces of clothing, like your top, skirt or dress. For a pattern, drag a box over it.";
+const MAX_PIECES = 3;
+
+const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), {
+  maxPicks: MAX_PIECES,
+  replaceWhenFull: false,
+  onChange: renderPieces,
+  onFull() {
+    outfitHint.textContent = "Up to 3 pieces. Remove one to add another.";
+  },
+});
+
+function renderPieces(picks) {
+  pieceList.hidden = picks.length === 0;
+  outfitHint.textContent =
+    picks.length < MAX_PIECES ? OUTFIT_HINT : "That's 3 pieces. Remove one to pick a different piece.";
+
+  pieceList.replaceChildren(
+    ...picks.map((pick, i) => {
+      const row = document.createElement("li");
+      row.className = "piece-row";
+
+      const num = document.createElement("span");
+      num.className = "piece-num";
+      num.textContent = String(i + 1);
+      num.setAttribute("aria-hidden", "true");
+
+      const swatch = document.createElement("span");
+      swatch.className = "swatch";
+      swatch.style.background = pick.hex;
+
+      const text = document.createElement("div");
+      text.className = "piece-text";
+      const name = document.createElement("span");
+      name.className = "piece-name";
+      name.textContent = suggestName(pick.lab);
+      const hex = document.createElement("span");
+      hex.className = "hex";
+      hex.textContent = pick.hex;
+      text.append(name, hex);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "btn-icon";
+      remove.setAttribute("aria-label", `Remove piece ${i + 1}, ${name.textContent}`);
+      remove.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+      remove.addEventListener("click", () => outfitPicker.removePick(i));
+
+      row.append(num, swatch, text, remove);
+      return row;
+    })
+  );
+}
 
 wirePhotoInputs(
   [document.getElementById("outfitCamera"), document.getElementById("outfitGallery")],
@@ -306,6 +363,15 @@ wirePhotoInputs(
 );
 
 document.getElementById("outfitClear").addEventListener("click", () => {
+  outfitPicker.clearPicks();
   outfitPanel.hidden = true;
   matchEmpty.hidden = false;
 });
+
+// The closet can change while you're on the other tab, so check it each
+// time the Match screen is shown.
+function updateMatchNotice() {
+  matchNeedsCloset.hidden = closet.length > 0;
+}
+
+document.getElementById("goToCloset").addEventListener("click", () => showScreen("closet"));
