@@ -27,3 +27,7 @@ python3 -m http.server 5174
 ```
 
 Then open <http://localhost:5174>.
+
+## Deploying
+
+Pushing to `main` updates the live site through GitHub Pages. Before pushing a change, update the version string in `index.html` (it appears on `style.css`, in the import map and on `app.js`). Phones then load the whole new set of files together instead of mixing in cached old ones.

@@ -15,7 +15,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=2026-10-02.1" />
 </head>
 
 <body>
@@ -155,15 +155,6 @@
       </section>
     </section>
 
-    <footer class="site-footer">
-      <p>Made by <a href="https://shanzayc.github.io/" target="_blank" rel="noopener">Shanzay Chaudhry</a></p>
-      <p class="footer-links">
-        <button id="aboutFooter" class="link-button" type="button">About</button>
-        <span aria-hidden="true">·</span>
-        <a href="https://github.com/shanzayc/hijab-match" target="_blank" rel="noopener">Source code</a>
-      </p>
-    </footer>
-
     <p id="photoError" class="toast" role="alert" hidden></p>
   </main>
 
@@ -264,6 +255,24 @@
     </div>
   </dialog>
 
-  <script type="module" src="app.js"></script>
+  <!--
+    Cache busting. GitHub Pages lets browsers reuse files for 10 minutes,
+    which can mix old and new code right after an update. Every file gets
+    the same version, so a changed index.html always loads a matching set.
+    Change the version (here and on style.css above) whenever you deploy.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "./color.js": "./color.js?v=2026-10-02.1",
+        "./match.js": "./match.js?v=2026-10-02.1",
+        "./names.js": "./names.js?v=2026-10-02.1",
+        "./picker.js": "./picker.js?v=2026-10-02.1",
+        "./storage.js": "./storage.js?v=2026-10-02.1",
+        "./zoom.js": "./zoom.js?v=2026-10-02.1"
+      }
+    }
+  </script>
+  <script type="module" src="app.js?v=2026-10-02.1"></script>
 </body>
 </html>

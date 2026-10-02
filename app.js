@@ -48,7 +48,6 @@ for (const tab of tabs) {
 // ---------------------------------------------------------------
 const aboutDialog = document.getElementById("aboutDialog");
 document.getElementById("aboutOpen").addEventListener("click", () => aboutDialog.showModal());
-document.getElementById("aboutFooter").addEventListener("click", () => aboutDialog.showModal());
 document.getElementById("aboutClose").addEventListener("click", () => aboutDialog.close());
 aboutDialog.addEventListener("click", (e) => {
   if (e.target !== aboutDialog) return;
