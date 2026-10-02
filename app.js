@@ -4,6 +4,7 @@
 
 import { PhotoPicker } from "./picker.js";
 import { loadCloset, saveCloset, newId } from "./storage.js";
+import { suggestName } from "./names.js";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const scrollBehavior = reduceMotion ? "auto" : "smooth";
@@ -85,6 +86,14 @@ const pickHex = document.getElementById("pickHex");
 const hijabName = document.getElementById("hijabName");
 const addSave = document.getElementById("addSave");
 
+// The name field is filled with a suggestion from the colour. Once you
+// type in it, re-picking the colour no longer replaces what you wrote.
+let nameEdited = false;
+hijabName.addEventListener("input", () => {
+  // Clearing the field hands it back to the suggestion.
+  nameEdited = hijabName.value.trim() !== "";
+});
+
 const hijabPicker = new PhotoPicker(document.getElementById("hijabCanvas"), {
   maxPicks: 1,
   onChange(picks) {
@@ -96,6 +105,7 @@ const hijabPicker = new PhotoPicker(document.getElementById("hijabCanvas"), {
     }
     pickSwatch.style.background = pick.hex;
     pickHex.textContent = pick.hex;
+    if (!nameEdited) hijabName.value = suggestName(pick.lab);
     pickHint.textContent = "Not quite right? Tap or drag again.";
   },
 });
@@ -105,6 +115,7 @@ wirePhotoInputs(
   hijabPicker,
   () => {
     hijabName.value = "";
+    nameEdited = false;
     addPanel.hidden = false;
     closetEmpty.hidden = true;
     addPanel.scrollIntoView({ behavior: scrollBehavior, block: "start" });
@@ -212,6 +223,8 @@ function openHijab(id) {
   dlgSwatch.style.background = item.hex;
   dlgHex.textContent = item.hex;
   dlgName.value = item.name;
+  // A hijab saved without a name still gets a hint from its colour.
+  dlgName.placeholder = suggestName(item.lab);
   dlgActions.hidden = false;
   dlgConfirm.hidden = true;
   dialog.showModal();
