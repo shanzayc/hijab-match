@@ -21,10 +21,10 @@
 
   --error: #c4321f;
   --error-soft: rgba(196, 50, 31, 0.1);
+  --on-error: #ffffff;
 
   --radius: 14px;
   --radius-lg: 20px;
-  --radius-pill: 999px;
 
   --shadow-sm: 0 1px 2px rgba(28, 23, 25, 0.05);
   --shadow: 0 2px 4px -1px rgba(28, 23, 25, 0.06), 0 6px 16px -4px rgba(28, 23, 25, 0.08);
@@ -52,6 +52,7 @@
 
     --error: #f2836f;
     --error-soft: rgba(242, 131, 111, 0.14);
+    --on-error: #24100c;
   }
 }
 
@@ -66,6 +67,10 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Keep scrolled-to content and focused fields clear of the sticky
+     app bar and the fixed tab bar. */
+  scroll-padding-top: 64px;
+  scroll-padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 12px);
 }
 
 body {
@@ -236,13 +241,19 @@ main {
 }
 
 .photo-canvas {
+  /* Canvas is a replaced element, so auto width and height with both
+     max limits shrink it without distorting the photo. Tap positions
+     depend on that. */
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
   max-height: 60vh;
-  object-fit: contain;
+  margin: 0 auto;
   border-radius: var(--radius);
   background: var(--surface-2);
+  touch-action: none;
+  cursor: crosshair;
 }
 
 .panel-hint {
@@ -250,10 +261,204 @@ main {
   font-size: 14px;
 }
 
+.pick-result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.pick-colour {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pick-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hex {
+  display: block;
+  color: var(--text-muted);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.swatch {
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  /* Inner ring so white and black swatches still read against the page. */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.swatch-lg {
+  width: 44px;
+  height: 44px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.field input {
+  min-height: 48px;
+  padding: 0 14px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  /* 16px stops iOS Safari zooming in when the field gets focus. */
+  font: inherit;
+  font-size: 16px;
+}
+
+.field input::placeholder {
+  color: var(--text-faint);
+}
+
+.field input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* ---------------------------------------------------------------
+   Closet grid
+   --------------------------------------------------------------- */
 .closet-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 12px;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tile img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.tile .swatch {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.tile-name {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tile-name.is-unnamed {
+  color: var(--text-faint);
+}
+
+.tile:focus-visible {
+  outline: none;
+}
+
+.tile:focus-visible img {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------
+   Edit dialog
+   --------------------------------------------------------------- */
+.sheet {
+  width: calc(100% - 32px);
+  max-width: 420px;
+  max-height: calc(100dvh - 32px);
+  padding: 16px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sheet::backdrop {
+  background: rgba(20, 15, 18, 0.5);
+}
+
+.sheet-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Thumbnails are stored at 150 px, so keep them near that size. */
+.sheet-thumb {
+  display: block;
+  flex: none;
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sheet-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--error-soft);
+  border-radius: var(--radius);
+}
+
+.sheet-confirm p {
+  font-size: 15px;
 }
 
 /* ---------------------------------------------------------------
@@ -316,6 +521,47 @@ main {
 .tab:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-danger {
+  background: var(--surface);
+  color: var(--error);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-danger-solid {
+  background: var(--error);
+  color: var(--on-error);
+  border: none;
+}
+
+.btn-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: -8px -8px -8px 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.btn-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid var(--accent);
 }
 
 .btn-text {

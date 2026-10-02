@@ -32,26 +32,7 @@
     <section id="closetScreen" class="screen" aria-labelledby="closetTitle">
       <div class="screen-head">
         <h1 id="closetTitle">Your closet</h1>
-        <p class="screen-sub">Add each hijab once. Your photos stay on this phone.</p>
-      </div>
-
-      <div id="closetEmpty" class="empty-state">
-        <div class="empty-swatches" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-        <h2>No hijabs yet</h2>
-        <p>Take a photo of one hijab at a time, laid flat or hanging.</p>
-      </div>
-
-      <div id="closetGrid" class="closet-grid" hidden></div>
-
-      <div id="addPanel" class="photo-panel" hidden>
-        <div class="panel-head">
-          <h2>New hijab</h2>
-          <button id="addCancel" class="btn-text" type="button">Cancel</button>
-        </div>
-        <canvas id="hijabCanvas" class="photo-canvas"></canvas>
-        <p class="panel-hint">Next you'll tap the fabric to pick its colour.</p>
+        <p id="closetSub" class="screen-sub">Add each hijab once. Your photos stay on this phone.</p>
       </div>
 
       <div class="capture-bar">
@@ -67,6 +48,40 @@
         </label>
       </div>
       <p class="tip">Tip: daylight works best. Turn the flash off.</p>
+
+      <div id="closetEmpty" class="empty-state">
+        <div class="empty-swatches" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <h2>No hijabs yet</h2>
+        <p>Take a photo of one hijab at a time, laid flat or hanging.</p>
+      </div>
+
+      <div id="addPanel" class="photo-panel" hidden>
+        <div class="panel-head">
+          <h2>New hijab</h2>
+          <button id="addCancel" class="btn-text" type="button">Cancel</button>
+        </div>
+        <canvas id="hijabCanvas" class="photo-canvas"></canvas>
+        <p id="pickHint" class="panel-hint">Tap the fabric, or drag a box over it.</p>
+
+        <div id="pickResult" class="pick-result" hidden>
+          <div class="pick-colour">
+            <span id="pickSwatch" class="swatch swatch-lg"></span>
+            <div>
+              <span class="pick-label">Picked colour</span>
+              <span id="pickHex" class="hex"></span>
+            </div>
+          </div>
+          <label class="field">
+            <span class="field-label">Name (optional)</span>
+            <input id="hijabName" type="text" maxlength="40" placeholder="For example, dusty rose chiffon" autocomplete="off" enterkeyhint="done" />
+          </label>
+          <button id="addSave" class="btn btn-primary" type="button">Save to closet</button>
+        </div>
+      </div>
+
+      <div id="closetGrid" class="closet-grid" hidden></div>
     </section>
 
     <!-- ============================ Match ============================= -->
@@ -74,23 +89,6 @@
       <div class="screen-head">
         <h1 id="matchTitle">Match an outfit</h1>
         <p class="screen-sub">Take a photo of what you're wearing and we'll rank your hijabs.</p>
-      </div>
-
-      <div id="matchEmpty" class="empty-state">
-        <div class="empty-outfit" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M17 6h14l9 7-5 7-4-3v25H17V17l-4 3-5-7z" /></svg>
-        </div>
-        <h2>Ready when you are</h2>
-        <p>Stand in good light and get your whole outfit in the frame.</p>
-      </div>
-
-      <div id="outfitPanel" class="photo-panel" hidden>
-        <div class="panel-head">
-          <h2>Your outfit</h2>
-          <button id="outfitClear" class="btn-text" type="button">Clear</button>
-        </div>
-        <canvas id="outfitCanvas" class="photo-canvas"></canvas>
-        <p class="panel-hint">Next you'll tap 1 to 3 pieces: top, skirt, or dress.</p>
       </div>
 
       <div class="capture-bar">
@@ -106,10 +104,62 @@
         </label>
       </div>
       <p class="tip">Tip: daylight works best. Turn the flash off.</p>
+
+      <div id="matchEmpty" class="empty-state">
+        <div class="empty-outfit" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M17 6h14l9 7-5 7-4-3v25H17V17l-4 3-5-7z" /></svg>
+        </div>
+        <h2>No outfit photo yet</h2>
+        <p>Stand in good light and get your whole outfit in the frame.</p>
+      </div>
+
+      <div id="outfitPanel" class="photo-panel" hidden>
+        <div class="panel-head">
+          <h2>Your outfit</h2>
+          <button id="outfitClear" class="btn-text" type="button">Clear</button>
+        </div>
+        <canvas id="outfitCanvas" class="photo-canvas"></canvas>
+        <p class="panel-hint">Next you'll tap 1 to 3 pieces: top, skirt, or dress.</p>
+      </div>
     </section>
 
     <p id="photoError" class="toast" role="alert" hidden></p>
   </main>
+
+  <dialog id="hijabDialog" class="sheet" aria-labelledby="dlgTitle">
+    <div class="panel-head">
+      <h2 id="dlgTitle">Edit hijab</h2>
+      <button id="dlgClose" class="btn-icon" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+    <div class="sheet-summary">
+      <img id="dlgThumb" class="sheet-thumb" alt="" />
+      <div class="pick-colour">
+        <span id="dlgSwatch" class="swatch swatch-lg"></span>
+        <div>
+          <span class="pick-label">Saved colour</span>
+          <span id="dlgHex" class="hex"></span>
+        </div>
+      </div>
+    </div>
+    <label class="field">
+      <span class="field-label">Name</span>
+      <input id="dlgName" type="text" maxlength="40" placeholder="For example, dusty rose chiffon" autocomplete="off" enterkeyhint="done" />
+    </label>
+
+    <div id="dlgActions" class="sheet-actions">
+      <button id="dlgDelete" class="btn btn-danger" type="button">Delete</button>
+      <button id="dlgSave" class="btn btn-primary" type="button">Save</button>
+    </div>
+    <div id="dlgConfirm" class="sheet-confirm" hidden>
+      <p>Delete this hijab from your closet? This can't be undone.</p>
+      <div class="sheet-actions">
+        <button id="dlgKeep" class="btn btn-secondary" type="button">Keep it</button>
+        <button id="dlgConfirmDelete" class="btn btn-danger-solid" type="button">Delete</button>
+      </div>
+    </div>
+  </dialog>
 
   <nav class="tab-bar" aria-label="Screens">
     <button class="tab is-active" type="button" data-screen="closet" aria-current="page">
