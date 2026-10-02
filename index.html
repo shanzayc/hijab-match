@@ -15,7 +15,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="style.css?v=2026-10-02.1" />
+  <link rel="stylesheet" href="style.css?v=2026-10-02.3" />
 </head>
 
 <body>
@@ -62,16 +62,17 @@
 
       <div id="addPanel" class="photo-panel" hidden>
         <div class="panel-head">
-          <h2>New hijab</h2>
+          <h2 id="addTitle">New hijab</h2>
           <div class="panel-actions">
-            <button id="hijabZoom" class="btn btn-secondary btn-small" type="button">
+            <button id="hijabZoom" class="btn btn-secondary btn-small" type="button" aria-label="Zoom in to pick a precise colour">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6" /></svg>
-              Zoom in
+              Zoom
             </button>
             <button id="addCancel" class="btn-text" type="button">Cancel</button>
           </div>
         </div>
         <canvas id="hijabCanvas" class="photo-canvas"></canvas>
+        <p id="currentColour" class="current-colour" hidden></p>
         <p id="pickHint" class="panel-hint">Tap the fabric, or drag a box over it.</p>
 
         <div id="pickResult" class="pick-result" hidden>
@@ -132,15 +133,15 @@
         <div class="panel-head">
           <h2>Your outfit</h2>
           <div class="panel-actions">
-            <button id="outfitZoom" class="btn btn-secondary btn-small" type="button">
+            <button id="outfitZoom" class="btn btn-secondary btn-small" type="button" aria-label="Zoom in to pick a precise colour">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6" /></svg>
-              Zoom in
+              Zoom
             </button>
             <button id="outfitClear" class="btn-text" type="button">Clear</button>
           </div>
         </div>
         <canvas id="outfitCanvas" class="photo-canvas"></canvas>
-        <p id="outfitHint" class="panel-hint">Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, zoom in.</p>
+        <p id="outfitHint" class="panel-hint">Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, use Zoom.</p>
         <ol id="pieceList" class="piece-list" hidden></ol>
         <button id="findMatches" class="btn btn-primary" type="button" hidden>Find my hijab</button>
       </div>
@@ -210,6 +211,7 @@
     </label>
 
     <div id="dlgActions" class="sheet-actions">
+      <button id="dlgChangeColour" class="btn btn-secondary sheet-actions-wide" type="button">Change colour</button>
       <button id="dlgDelete" class="btn btn-danger" type="button">Delete</button>
       <button id="dlgSave" class="btn btn-primary" type="button">Save</button>
     </div>
@@ -264,15 +266,15 @@
   <script type="importmap">
     {
       "imports": {
-        "./color.js": "./color.js?v=2026-10-02.1",
-        "./match.js": "./match.js?v=2026-10-02.1",
-        "./names.js": "./names.js?v=2026-10-02.1",
-        "./picker.js": "./picker.js?v=2026-10-02.1",
-        "./storage.js": "./storage.js?v=2026-10-02.1",
-        "./zoom.js": "./zoom.js?v=2026-10-02.1"
+        "./color.js": "./color.js?v=2026-10-02.3",
+        "./match.js": "./match.js?v=2026-10-02.3",
+        "./names.js": "./names.js?v=2026-10-02.3",
+        "./picker.js": "./picker.js?v=2026-10-02.3",
+        "./storage.js": "./storage.js?v=2026-10-02.3",
+        "./zoom.js": "./zoom.js?v=2026-10-02.3"
       }
     }
   </script>
-  <script type="module" src="app.js?v=2026-10-02.1"></script>
+  <script type="module" src="app.js?v=2026-10-02.3"></script>
 </body>
 </html>

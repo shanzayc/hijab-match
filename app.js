@@ -120,6 +120,26 @@ const pickSwatch = document.getElementById("pickSwatch");
 const pickHex = document.getElementById("pickHex");
 const hijabName = document.getElementById("hijabName");
 const addSave = document.getElementById("addSave");
+const addTitle = document.getElementById("addTitle");
+const currentColour = document.getElementById("currentColour");
+
+// Set while changing a saved hijab's colour: { item, newPhoto }.
+// newPhoto is true once a fresh photo replaces the saved picture.
+// null while adding a new hijab.
+let editing = null;
+
+function setPanelMode(item) {
+  addTitle.textContent = item ? "Change colour" : "New hijab";
+  addSave.textContent = item ? "Save changes" : "Save to closet";
+  currentColour.hidden = !item;
+  if (!item) return;
+  const swatch = document.createElement("span");
+  swatch.className = "swatch";
+  swatch.style.background = item.hex;
+  const name = document.createElement("strong");
+  name.textContent = suggestName(item.lab);
+  currentColour.replaceChildren("Current colour:", swatch, name);
+}
 
 // The name field is filled with a suggestion from the colour. Once you
 // type in it, re-picking the colour no longer replaces what you wrote.
@@ -149,8 +169,13 @@ wirePhotoInputs(
   [document.getElementById("hijabCamera"), document.getElementById("hijabGallery")],
   hijabPicker,
   () => {
-    hijabName.value = "";
-    nameEdited = false;
+    if (editing) {
+      // A new photo of the hijab being edited: keep its name.
+      editing.newPhoto = true;
+    } else {
+      hijabName.value = "";
+      nameEdited = false;
+    }
     addPanel.hidden = false;
     closetEmpty.hidden = true;
     addPanel.scrollIntoView({ behavior: scrollBehavior, block: "start" });
@@ -159,7 +184,28 @@ wirePhotoInputs(
 
 function closeAddPanel() {
   addPanel.hidden = true;
+  editing = null;
+  setPanelMode(null);
   renderCloset();
+}
+
+// Re-pick a saved hijab's colour. The original photo isn't kept, so this
+// starts from the saved thumbnail; Take photo or Gallery can replace it.
+async function startColourEdit(item) {
+  try {
+    const blob = await (await fetch(item.thumb)).blob();
+    await hijabPicker.load(blob);
+  } catch {
+    showError("Couldn't open that hijab's picture. Try taking a new photo of it.");
+    return;
+  }
+  editing = { item, newPhoto: false };
+  setPanelMode(item);
+  hijabName.value = item.name;
+  nameEdited = item.name !== "";
+  addPanel.hidden = false;
+  closetEmpty.hidden = true;
+  addPanel.scrollIntoView({ behavior: scrollBehavior, block: "start" });
 }
 
 document.getElementById("addCancel").addEventListener("click", closeAddPanel);
@@ -176,19 +222,42 @@ document.getElementById("hijabZoom").addEventListener("click", () => {
   });
 });
 
-function saveNewHijab() {
+function saveHijab() {
   const pick = hijabPicker.picks[0];
   if (!pick) return;
-  const item = {
-    id: newId(),
-    name: hijabName.value.trim(),
-    hex: pick.hex,
-    lab: roundLab(pick.lab),
-    thumb: hijabPicker.thumbnail(150),
-    inWash: false,
-    createdAt: Date.now(),
-  };
-  const next = [item, ...closet];
+  const name = hijabName.value.trim();
+  let next;
+
+  if (editing) {
+    const { item, newPhoto } = editing;
+    if (!closet.some((h) => h.id === item.id)) {
+      showError("That hijab has been deleted, so there's nothing to change.");
+      closeAddPanel();
+      return;
+    }
+    const updated = {
+      ...item,
+      name,
+      hex: pick.hex,
+      lab: roundLab(pick.lab),
+      // Re-cropping the saved thumbnail would only blur it, so keep it
+      // unless a new photo was taken.
+      thumb: newPhoto ? hijabPicker.thumbnail(150) : item.thumb,
+    };
+    next = closet.map((h) => (h.id === item.id ? updated : h));
+  } else {
+    const item = {
+      id: newId(),
+      name,
+      hex: pick.hex,
+      lab: roundLab(pick.lab),
+      thumb: hijabPicker.thumbnail(150),
+      inWash: false,
+      createdAt: Date.now(),
+    };
+    next = [item, ...closet];
+  }
+
   if (!saveCloset(next)) {
     showError("Couldn't save. This browser's storage is full or blocked. Try deleting a hijab first.");
     return;
@@ -198,12 +267,12 @@ function saveNewHijab() {
   window.scrollTo({ top: 0, behavior: scrollBehavior });
 }
 
-addSave.addEventListener("click", saveNewHijab);
+addSave.addEventListener("click", saveHijab);
 hijabName.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
     hijabName.blur();
-    saveNewHijab();
+    saveHijab();
   }
 });
 
@@ -217,7 +286,7 @@ function renderCloset() {
   closetSub.textContent =
     count === 0
       ? "Add each hijab once. Your photos stay on this phone."
-      : `${count} ${count === 1 ? "hijab" : "hijabs"}, saved on this phone. Tap one to rename or delete it.`;
+      : `${count} ${count === 1 ? "hijab" : "hijabs"}, saved on this phone. Tap one to rename it, change its colour or delete it.`;
 
   closetGrid.replaceChildren(
     ...closet.map((item) => {
@@ -301,6 +370,12 @@ dlgName.addEventListener("keydown", (e) => {
   }
 });
 
+document.getElementById("dlgChangeColour").addEventListener("click", () => {
+  const item = closet.find((h) => h.id === editingId);
+  dialog.close();
+  if (item) startColourEdit(item);
+});
+
 document.getElementById("dlgDelete").addEventListener("click", () => {
   dlgActions.hidden = true;
   dlgConfirm.hidden = false;
@@ -348,7 +423,7 @@ const resultGroups = document.getElementById("resultGroups");
 const seeAll = document.getElementById("seeAll");
 
 const OUTFIT_HINT =
-  "Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, zoom in.";
+  "Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, use Zoom.";
 const MAX_PIECES = 3;
 
 const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), {

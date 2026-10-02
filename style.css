@@ -237,9 +237,14 @@ main {
   justify-content: space-between;
 }
 
+.panel-head {
+  gap: 12px;
+}
+
 .panel-head h2 {
   font-size: 17px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .photo-canvas {
@@ -763,6 +768,28 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.sheet-actions-wide {
+  grid-column: 1 / -1;
+}
+
+.current-colour {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.current-colour .swatch {
+  width: 20px;
+  height: 20px;
+}
+
+.current-colour strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .sheet-confirm {

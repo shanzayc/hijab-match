@@ -32,12 +32,18 @@ function loadImage(url) {
   });
 }
 
+// Scale so the long side is exactly maxSide. Large photos shrink; small
+// images (such as a saved 150 px thumbnail being re-picked) are enlarged
+// so they show at a usable size and taps cover the same share of the
+// picture as on a full photo.
 function scaledCanvas(img, maxSide) {
-  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  const scale = maxSide / Math.max(img.naturalWidth, img.naturalHeight);
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
   canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
@@ -64,8 +70,9 @@ export class PhotoPicker {
     canvas.addEventListener("pointercancel", () => this.#cancel());
   }
 
-  // Decode a photo file and show it. Modern browsers apply the photo's
-  // EXIF rotation when drawing, so portrait shots stay upright.
+  // Decode a photo file (or any image Blob) and show it. Modern browsers
+  // apply the photo's EXIF rotation when drawing, so portrait shots stay
+  // upright.
   async load(file) {
     const url = URL.createObjectURL(file);
     let img;
