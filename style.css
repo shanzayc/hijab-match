@@ -1,0 +1,398 @@
+/* ---------------------------------------------------------------
+   Design tokens
+   Warm neutral chrome so the hijab and outfit colours are the
+   most colourful things on screen.
+   --------------------------------------------------------------- */
+:root {
+  --bg: #f8f6f5;
+  --surface: #ffffff;
+  --surface-2: #f1eeec;
+  --border: #e7e2df;
+  --border-strong: #d6cfcb;
+
+  --text: #1c1719;
+  --text-muted: #6f6569;
+  --text-faint: #a0969a;
+
+  --accent: #a3456a;
+  --accent-hover: #8c3a5b;
+  --accent-soft: rgba(163, 69, 106, 0.1);
+  --on-accent: #ffffff;
+
+  --error: #c4321f;
+  --error-soft: rgba(196, 50, 31, 0.1);
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(28, 23, 25, 0.05);
+  --shadow: 0 2px 4px -1px rgba(28, 23, 25, 0.06), 0 6px 16px -4px rgba(28, 23, 25, 0.08);
+
+  --tab-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121012;
+    --surface: #1b181a;
+    --surface-2: #242023;
+    --border: #2f2a2d;
+    --border-strong: #3d373a;
+
+    --text: #f1ecee;
+    --text-muted: #aaa0a4;
+    --text-faint: #786f73;
+
+    --accent: #e37ea4;
+    --accent-hover: #ec95b5;
+    --accent-soft: rgba(227, 126, 164, 0.14);
+    --on-accent: #1b0d13;
+
+    --error: #f2836f;
+    --error-soft: rgba(242, 131, 111, 0.14);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Base
+   --------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------
+   App bar and screens
+   --------------------------------------------------------------- */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.brand-mark {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 4px 16px calc(var(--tab-height) + var(--safe-bottom) + 24px);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.screen-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.screen-sub {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------------
+   Empty states
+   --------------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 40px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state h2 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+  font-size: 15px;
+  max-width: 30ch;
+}
+
+.empty-swatches {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.empty-swatches span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--surface);
+}
+
+.empty-swatches span:nth-child(1) { background: #c98f9b; }
+.empty-swatches span:nth-child(2) { background: #2f3e5c; margin-left: -12px; }
+.empty-swatches span:nth-child(3) { background: #d9c7ad; margin-left: -12px; }
+
+.empty-outfit {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.empty-outfit svg {
+  width: 36px;
+  height: 36px;
+  stroke-width: 2;
+}
+
+/* ---------------------------------------------------------------
+   Photo panels
+   --------------------------------------------------------------- */
+.photo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-head h2 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.photo-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.panel-hint {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.closet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+/* ---------------------------------------------------------------
+   Buttons
+   --------------------------------------------------------------- */
+.capture-bar {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  box-shadow: var(--shadow);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-2);
+}
+
+.btn:focus-within,
+.btn-text:focus-visible,
+.tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-text {
+  padding: 6px 4px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.tip {
+  margin-top: -8px;
+  color: var(--text-faint);
+  font-size: 13px;
+  text-align: center;
+}
+
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--tab-height) + var(--safe-bottom) + 12px);
+  max-width: 528px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: var(--error-soft);
+  color: var(--error);
+  border: 1px solid currentColor;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ---------------------------------------------------------------
+   Tab bar
+   --------------------------------------------------------------- */
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: calc(var(--tab-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tab.is-active {
+  color: var(--accent);
+}
