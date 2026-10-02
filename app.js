@@ -44,6 +44,20 @@ for (const tab of tabs) {
 }
 
 // ---------------------------------------------------------------
+// About
+// ---------------------------------------------------------------
+const aboutDialog = document.getElementById("aboutDialog");
+document.getElementById("aboutOpen").addEventListener("click", () => aboutDialog.showModal());
+document.getElementById("aboutFooter").addEventListener("click", () => aboutDialog.showModal());
+document.getElementById("aboutClose").addEventListener("click", () => aboutDialog.close());
+aboutDialog.addEventListener("click", (e) => {
+  if (e.target !== aboutDialog) return;
+  const r = aboutDialog.getBoundingClientRect();
+  const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  if (!inside) aboutDialog.close();
+});
+
+// ---------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------
 let errorTimer;

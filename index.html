@@ -25,6 +25,9 @@
       <circle cx="12" cy="11" r="3.2" />
     </svg>
     <span class="brand-name">Hijab Match</span>
+    <button id="aboutOpen" class="btn-icon app-bar-action" type="button" aria-label="About Hijab Match">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.6v.1" /></svg>
+    </button>
   </header>
 
   <main>
@@ -152,8 +155,46 @@
       </section>
     </section>
 
+    <footer class="site-footer">
+      <p>Made by <a href="https://shanzayc.github.io/" target="_blank" rel="noopener">Shanzay Chaudhry</a></p>
+      <p class="footer-links">
+        <button id="aboutFooter" class="link-button" type="button">About</button>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/shanzayc/hijab-match" target="_blank" rel="noopener">Source code</a>
+      </p>
+    </footer>
+
     <p id="photoError" class="toast" role="alert" hidden></p>
   </main>
+
+  <dialog id="aboutDialog" class="sheet about" aria-labelledby="aboutTitle">
+    <div class="panel-head">
+      <h2 id="aboutTitle">Why I made Hijab Match</h2>
+      <button id="aboutClose" class="btn-icon" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+
+    <div class="about-body">
+      <p>Growing up, I always wore a black hijab. It went with everything, but if I'm honest, it was also a way to hide.</p>
+      <p>I made Hijab Match for girls who want to wear more than black and feel confident doing it. It helps you find the hijab in your own closet that pulls an outfit together, and it might suggest a colour you wouldn't have tried.</p>
+
+      <h3>How it works</h3>
+      <ol class="about-steps">
+        <li>Photograph each of your hijabs once and tap the fabric to save its colour.</li>
+        <li>Photograph your outfit and tap up to 3 pieces.</li>
+        <li>Your hijabs are ranked 3, 2 or 1 stars, with the reason each one works.</li>
+      </ol>
+
+      <h3>Your photos stay on your phone</h3>
+      <p>Everything happens on your device. There's no account, and no photo is ever uploaded.</p>
+
+      <p class="about-credit">
+        Made by <a href="https://shanzayc.github.io/" target="_blank" rel="noopener">Shanzay Chaudhry</a>.
+        The code is on <a href="https://github.com/shanzayc/hijab-match" target="_blank" rel="noopener">GitHub</a>.
+      </p>
+    </div>
+  </dialog>
 
   <dialog id="hijabDialog" class="sheet" aria-labelledby="dlgTitle">
     <div class="panel-head">
