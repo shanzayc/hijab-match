@@ -127,7 +127,17 @@
         <canvas id="outfitCanvas" class="photo-canvas"></canvas>
         <p id="outfitHint" class="panel-hint">Tap up to 3 pieces of clothing, like your top, skirt or dress. For a pattern, drag a box over it.</p>
         <ol id="pieceList" class="piece-list" hidden></ol>
+        <button id="findMatches" class="btn btn-primary" type="button" hidden>Find my hijab</button>
       </div>
+
+      <section id="results" class="results" aria-labelledby="resultsTitle" hidden>
+        <div>
+          <h2 id="resultsTitle">Your matches</h2>
+          <p id="resultsSub" class="screen-sub"></p>
+        </div>
+        <div id="resultGroups" class="result-groups"></div>
+        <button id="seeAll" class="btn btn-secondary" type="button" hidden></button>
+      </section>
     </section>
 
     <p id="photoError" class="toast" role="alert" hidden></p>

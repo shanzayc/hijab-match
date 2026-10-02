@@ -2,7 +2,7 @@
 
 Recommends which hijab from your own collection best matches an outfit photo. A phone-first web app that uses the camera, needs no account, and keeps every photo on the device.
 
-**Status:** in progress (Day 3 of 7). You can build a closet (photograph a hijab, tap or drag on the fabric to pick its colour, then save, rename or delete it) and pick up to 3 colours from an outfit photo. Ranking hijabs against the outfit comes next.
+**Status:** in progress (Day 4 of 7). Build a closet of your hijabs, photograph an outfit, tap up to 3 pieces, and get your hijabs ranked 3, 2 or 1 stars with a reason for each.
 
 ## Run locally
 

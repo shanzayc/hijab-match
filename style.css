@@ -22,6 +22,7 @@
   --error: #c4321f;
   --error-soft: rgba(196, 50, 31, 0.1);
   --on-error: #ffffff;
+  --swatch-ring: rgba(0, 0, 0, 0.14);
 
   --radius: 14px;
   --radius-lg: 20px;
@@ -53,6 +54,7 @@
     --error: #f2836f;
     --error-soft: rgba(242, 131, 111, 0.14);
     --on-error: #24100c;
+    --swatch-ring: rgba(255, 255, 255, 0.28);
   }
 }
 
@@ -293,8 +295,9 @@ main {
   display: block;
   flex: none;
   border-radius: 50%;
-  /* Inner ring so white and black swatches still read against the page. */
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  /* Inner ring so white swatches show in light mode and black ones in
+     dark mode. */
+  box-shadow: inset 0 0 0 1px var(--swatch-ring);
 }
 
 .swatch-lg {
@@ -411,6 +414,122 @@ main {
 .notice .btn {
   align-self: flex-start;
   min-height: 44px;
+}
+
+/* ---------------------------------------------------------------
+   Match results
+   --------------------------------------------------------------- */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.results h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.result-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.star.is-on {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.result-card img {
+  display: block;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.result-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-name {
+  display: block;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.result-reason {
+  display: block;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.result-card .swatch {
+  width: 28px;
+  height: 28px;
+}
+
+/* Mute the text only; fading the card would also fade the photo and
+   swatch and misrepresent the hijab's colour. */
+.result-group.is-rest .result-name {
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 /* ---------------------------------------------------------------

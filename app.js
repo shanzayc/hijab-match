@@ -5,6 +5,7 @@
 import { PhotoPicker } from "./picker.js";
 import { loadCloset, saveCloset, newId } from "./storage.js";
 import { suggestName } from "./names.js";
+import { rankCloset } from "./match.js";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const scrollBehavior = reduceMotion ? "auto" : "smooth";
@@ -29,7 +30,11 @@ function showScreen(name) {
     if (active) tab.setAttribute("aria-current", "page");
     else tab.removeAttribute("aria-current");
   }
-  if (name === "match") updateMatchNotice();
+  if (name === "match") {
+    updateMatchNotice();
+    // The closet may have changed on the other tab.
+    if (!results.hidden) renderResults();
+  }
   window.scrollTo({ top: 0 });
 }
 
@@ -295,6 +300,11 @@ const matchNeedsCloset = document.getElementById("matchNeedsCloset");
 const outfitPanel = document.getElementById("outfitPanel");
 const outfitHint = document.getElementById("outfitHint");
 const pieceList = document.getElementById("pieceList");
+const findMatches = document.getElementById("findMatches");
+const results = document.getElementById("results");
+const resultsSub = document.getElementById("resultsSub");
+const resultGroups = document.getElementById("resultGroups");
+const seeAll = document.getElementById("seeAll");
 
 const OUTFIT_HINT =
   "Tap up to 3 pieces of clothing, like your top, skirt or dress. For a pattern, drag a box over it.";
@@ -311,6 +321,9 @@ const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), {
 
 function renderPieces(picks) {
   pieceList.hidden = picks.length === 0;
+  findMatches.hidden = picks.length === 0;
+  // Once results are showing, keep them in step with the pieces.
+  if (!results.hidden) renderResults();
   outfitHint.textContent =
     picks.length < MAX_PIECES ? OUTFIT_HINT : "That's 3 pieces. Remove one to pick a different piece.";
 
@@ -375,3 +388,130 @@ function updateMatchNotice() {
 }
 
 document.getElementById("goToCloset").addEventListener("click", () => showScreen("closet"));
+
+// ---------------------------------------------------------------
+// Match screen: results
+// ---------------------------------------------------------------
+const GROUPS = [
+  { stars: 3, label: "Great match" },
+  { stars: 2, label: "Good match" },
+  { stars: 1, label: "Could work" },
+];
+const STAR_PATH = "M12 3.5 14.4 9l5.6.5-4.3 3.7 1.3 5.6L12 15.9l-5 2.9 1.3-5.6L4 9.5 9.6 9z";
+const SVG_NS = "http://www.w3.org/2000/svg";
+let showRest = false;
+
+function starIcons(count) {
+  const wrap = document.createElement("span");
+  wrap.className = "stars";
+  wrap.setAttribute("role", "img");
+  wrap.setAttribute("aria-label", `${count} out of 3 stars`);
+  for (let i = 0; i < 3; i++) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("class", i < count ? "star is-on" : "star");
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", STAR_PATH);
+    svg.append(path);
+    wrap.append(svg);
+  }
+  return wrap;
+}
+
+function resultCard({ hijab, reason }) {
+  const card = document.createElement("li");
+  card.className = "result-card";
+
+  const img = document.createElement("img");
+  img.src = hijab.thumb;
+  img.alt = "";
+
+  const text = document.createElement("div");
+  text.className = "result-text";
+  const name = document.createElement("span");
+  name.className = "result-name";
+  name.textContent = hijab.name || suggestName(hijab.lab);
+  const why = document.createElement("span");
+  why.className = "result-reason";
+  why.textContent = reason;
+  text.append(name, why);
+
+  const swatch = document.createElement("span");
+  swatch.className = "swatch";
+  swatch.style.background = hijab.hex;
+
+  card.append(img, text, swatch);
+  return card;
+}
+
+function resultGroup(title, items, stars, extraClass) {
+  const group = document.createElement("section");
+  group.className = "result-group" + (extraClass ? ` ${extraClass}` : "");
+  const head = document.createElement("h3");
+  head.className = "result-group-head";
+  if (stars) head.append(starIcons(stars));
+  head.append(title);
+  const list = document.createElement("ul");
+  list.className = "result-list";
+  list.append(...items.map(resultCard));
+  group.append(head, list);
+  return group;
+}
+
+function renderResults() {
+  const picks = outfitPicker.picks;
+  if (picks.length === 0) {
+    results.hidden = true;
+    return;
+  }
+  results.hidden = false;
+  seeAll.hidden = true;
+  resultGroups.replaceChildren();
+
+  if (closet.length === 0) {
+    resultsSub.textContent = "Your closet is empty. Add a few hijabs, then come back to this outfit.";
+    return;
+  }
+
+  const ranked = rankCloset(closet, picks.map((p) => p.lab));
+  if (ranked.length === 0) {
+    resultsSub.textContent = "Every hijab in your closet is marked as in the wash.";
+    return;
+  }
+
+  const starred = ranked.filter((r) => r.stars > 0);
+  const rest = ranked.filter((r) => r.stars === 0);
+  const n = starred.length;
+  const total = ranked.length;
+  if (n === 0) {
+    resultsSub.textContent =
+      "None of your hijabs are a strong match for these colours. A neutral like black, white or beige is the safe choice.";
+  } else if (n === total) {
+    resultsSub.textContent =
+      total === 1 ? "Your hijab goes with this outfit." : `All ${total} of your hijabs go with this outfit.`;
+  } else {
+    resultsSub.textContent = `${n} of your ${total} hijabs ${n === 1 ? "goes" : "go"} with this outfit.`;
+  }
+
+  for (const { stars, label } of GROUPS) {
+    const items = starred.filter((r) => r.stars === stars);
+    if (items.length) resultGroups.append(resultGroup(label, items, stars));
+  }
+
+  if (rest.length) {
+    seeAll.hidden = false;
+    seeAll.textContent = showRest ? "Hide the rest" : `See all (${rest.length} more)`;
+    if (showRest) resultGroups.append(resultGroup("Not a match for this outfit", rest, 0, "is-rest"));
+  }
+}
+
+findMatches.addEventListener("click", () => {
+  showRest = false;
+  renderResults();
+  results.scrollIntoView({ behavior: scrollBehavior, block: "start" });
+});
+
+seeAll.addEventListener("click", () => {
+  showRest = !showRest;
+  renderResults();
+});
