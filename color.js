@@ -71,7 +71,12 @@ function distanceSq(p, q) {
 // as returned by getImageData). Runs k-means with k = 3 in LAB space and
 // returns the centre of the largest cluster, so a few shadow or
 // highlight pixels don't pull the result away from the fabric colour.
-export function dominantColour(rgba, { k = 3, iterations = 10 } = {}) {
+//
+// With `centre` (the LAB colour of the exact pixel tapped), it returns
+// the cluster closest to that colour instead. Zoomed-in picks use this:
+// there the person is pointing at one small detail, such as a dot in a
+// pattern, which may not be the most common colour in the sample.
+export function dominantColour(rgba, { k = 3, iterations = 10, centre = null } = {}) {
   const all = [];
   for (let i = 0; i < rgba.length; i += 4) {
     if (rgba[i + 3] < 128) continue; // skip transparent pixels
@@ -84,7 +89,7 @@ export function dominantColour(rgba, { k = 3, iterations = 10 } = {}) {
   const lit = all.filter((p) => p[0] <= GLARE_L);
   const points = lit.length > 0 ? lit : all;
 
-  if (points.length <= k) return mean(points);
+  if (points.length <= k) return centre ?? mean(points);
 
   // Seed the centres at evenly spaced lightness ranks. Unlike random
   // seeding, this gives the same answer every time for the same pixels.
@@ -121,6 +126,14 @@ export function dominantColour(rgba, { k = 3, iterations = 10 } = {}) {
     // An empty cluster keeps its old centre.
     centres = next.map((s, c) => (s[3] ? [s[0] / s[3], s[1] / s[3], s[2] / s[3]] : centres[c]));
     if (!changed) break;
+  }
+
+  if (centre) {
+    let nearest = 0;
+    for (let c = 1; c < k; c++) {
+      if (distanceSq(centres[c], centre) < distanceSq(centres[nearest], centre)) nearest = c;
+    }
+    return centres[nearest];
   }
 
   const counts = new Array(k).fill(0);

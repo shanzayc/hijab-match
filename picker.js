@@ -1,16 +1,20 @@
 // A photo on a canvas that you can tap or drag on to pick colours.
 //
-// Each photo is kept at two sizes:
-//   work    - at most 400 px on the long side. All colour sampling
-//             reads from this one, so it stays fast on large photos.
+// Each photo is kept at three sizes:
+//   work    - at most 400 px on the long side. Normal taps and drags
+//             sample from this one, so they stay fast on large photos.
 //   display - at most 800 px, so the on-screen photo stays sharp on
 //             high-density phone screens. Selection marks are drawn
 //             here, never on the work copy.
+//   detail  - at most 1600 px, for the zoom view. Small details such
+//             as dots in a pattern survive at this size, and zoomed-in
+//             picks sample from it.
 
-import { dominantColour, labToHex } from "./color.js";
+import { dominantColour, labToHex, rgbToLab } from "./color.js";
 
 const WORK_MAX = 400;
 const DISPLAY_MAX = 800;
+const DETAIL_MAX = 1600;
 
 // Tap samples a circle this many work pixels across the radius.
 const TAP_RADIUS = 10;
@@ -73,6 +77,8 @@ export class PhotoPicker {
     this.work = scaledCanvas(img, WORK_MAX);
     this.workCtx = this.work.getContext("2d", { willReadFrequently: true });
     this.base = scaledCanvas(img, DISPLAY_MAX);
+    this.detail = scaledCanvas(img, DETAIL_MAX);
+    this.detailCtx = this.detail.getContext("2d", { willReadFrequently: true });
     this.canvas.width = this.base.width;
     this.canvas.height = this.base.height;
     this.picks = [];
@@ -91,6 +97,54 @@ export class PhotoPicker {
     this.picks.splice(index, 1);
     this.#redraw();
     this.onChange(this.picks);
+  }
+
+  // A precise pick from the zoom view, in detail-copy pixels. Samples a
+  // small circle and keeps the colour of the exact spot tapped, even
+  // when it isn't the most common colour around it.
+  // Returns "added", "full" (limit reached, nothing changed) or "none".
+  pickPrecise(x, y, r) {
+    if (!this.detail) return "none";
+    if (this.picks.length >= this.maxPicks && !this.replaceWhenFull) {
+      this.onFull();
+      return "full";
+    }
+    const W = this.detail.width;
+    const H = this.detail.height;
+    const cx = clamp(Math.floor(x), 0, W - 1);
+    const cy = clamp(Math.floor(y), 0, H - 1);
+    const [cr, cg, cb] = this.detailCtx.getImageData(cx, cy, 1, 1).data;
+    const pixels = pixelsIn(this.detailCtx, W, H, { type: "circle", x, y, r });
+    const lab = dominantColour(pixels, { centre: rgbToLab(cr, cg, cb) });
+    if (!lab) return "none";
+
+    // Store the shape in work pixels, like every other pick.
+    const k = W / this.work.width;
+    const shape = { type: "circle", x: x / k, y: y / k, r: r / k };
+    return this.#addPick(shape, lab);
+  }
+
+  // Draw every pick's mark (and number, when several are allowed) onto
+  // another canvas. k converts work pixels to that canvas's pixels; px is
+  // that canvas's pixels per screen pixel.
+  drawMarks(ctx, k, px) {
+    this.picks.forEach((pick, i) => {
+      drawMark(ctx, pick.shape, k, px);
+      if (this.maxPicks > 1) drawLabel(ctx, pick.shape, k, px, String(i + 1));
+    });
+  }
+
+  #addPick(shape, lab) {
+    if (this.picks.length >= this.maxPicks && !this.replaceWhenFull) {
+      this.#redraw(); // clear any drag box
+      this.onFull();
+      return "full";
+    }
+    this.picks.push({ shape, lab, hex: labToHex(lab) });
+    if (this.picks.length > this.maxPicks) this.picks.shift();
+    this.#redraw();
+    this.onChange(this.picks);
+    return "added";
   }
 
   // A square JPEG thumbnail, cropped around the first pick so the grid
@@ -177,60 +231,14 @@ export class PhotoPicker {
       return;
     }
 
-    const lab = dominantColour(this.#pixelsIn(shape));
-    if (lab) {
-      this.picks.push({ shape, lab, hex: labToHex(lab) });
-      if (this.picks.length > this.maxPicks) this.picks.shift();
-      this.onChange(this.picks);
-    }
-    this.#redraw();
+    const lab = dominantColour(pixelsIn(this.workCtx, this.work.width, this.work.height, shape));
+    if (lab) this.#addPick(shape, lab);
+    else this.#redraw();
   }
 
   #cancel() {
     this.gesture = null;
     this.#redraw();
-  }
-
-  // ---------------------------------------------------------------
-  // Sampling
-  // ---------------------------------------------------------------
-  #pixelsIn(shape) {
-    const W = this.work.width;
-    const H = this.work.height;
-    let x0, y0, x1, y1;
-    if (shape.type === "circle") {
-      x0 = shape.x - shape.r;
-      y0 = shape.y - shape.r;
-      x1 = shape.x + shape.r;
-      y1 = shape.y + shape.r;
-    } else {
-      x0 = shape.x;
-      y0 = shape.y;
-      x1 = shape.x + shape.w;
-      y1 = shape.y + shape.h;
-    }
-    x0 = clamp(Math.floor(x0), 0, W - 1);
-    y0 = clamp(Math.floor(y0), 0, H - 1);
-    x1 = clamp(Math.ceil(x1), x0 + 1, W);
-    y1 = clamp(Math.ceil(y1), y0 + 1, H);
-
-    const data = this.workCtx.getImageData(x0, y0, x1 - x0, y1 - y0).data;
-    if (shape.type === "box") return data;
-
-    // Keep only the pixels inside the circle.
-    const out = [];
-    const r2 = shape.r * shape.r;
-    const width = x1 - x0;
-    for (let i = 0; i < data.length; i += 4) {
-      const px = x0 + ((i / 4) % width) + 0.5;
-      const py = y0 + Math.floor(i / 4 / width) + 0.5;
-      if ((px - shape.x) ** 2 + (py - shape.y) ** 2 <= r2) {
-        out.push(data[i], data[i + 1], data[i + 2], data[i + 3]);
-      }
-    }
-    // A tap right at a corner can leave the circle with no pixel centres
-    // inside it; fall back to the whole square in that case.
-    return out.length ? Uint8ClampedArray.from(out) : data;
   }
 
   // ---------------------------------------------------------------
@@ -246,10 +254,7 @@ export class PhotoPicker {
     // Keep marks about 2 screen pixels thick whatever the zoom.
     const px = rect.width ? this.canvas.width / rect.width : 1;
 
-    this.picks.forEach((pick, i) => {
-      drawMark(ctx, pick.shape, k, px);
-      if (this.maxPicks > 1) drawLabel(ctx, pick.shape, k, px, String(i + 1));
-    });
+    this.drawMarks(ctx, k, px);
 
     const g = this.gesture;
     if (g?.dragging && g.current) {
@@ -264,11 +269,51 @@ export class PhotoPicker {
   }
 }
 
+// The pixels of a canvas inside a circle or box, as RGBA.
+function pixelsIn(ctx, W, H, shape) {
+  let x0, y0, x1, y1;
+  if (shape.type === "circle") {
+    x0 = shape.x - shape.r;
+    y0 = shape.y - shape.r;
+    x1 = shape.x + shape.r;
+    y1 = shape.y + shape.r;
+  } else {
+    x0 = shape.x;
+    y0 = shape.y;
+    x1 = shape.x + shape.w;
+    y1 = shape.y + shape.h;
+  }
+  x0 = clamp(Math.floor(x0), 0, W - 1);
+  y0 = clamp(Math.floor(y0), 0, H - 1);
+  x1 = clamp(Math.ceil(x1), x0 + 1, W);
+  y1 = clamp(Math.ceil(y1), y0 + 1, H);
+
+  const data = ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+  if (shape.type === "box") return data;
+
+  // Keep only the pixels inside the circle.
+  const out = [];
+  const r2 = shape.r * shape.r;
+  const width = x1 - x0;
+  for (let i = 0; i < data.length; i += 4) {
+    const px = x0 + ((i / 4) % width) + 0.5;
+    const py = y0 + Math.floor(i / 4 / width) + 0.5;
+    if ((px - shape.x) ** 2 + (py - shape.y) ** 2 <= r2) {
+      out.push(data[i], data[i + 1], data[i + 2], data[i + 3]);
+    }
+  }
+  // A tap right at a corner can leave the circle with no pixel centres
+  // inside it; fall back to the whole square in that case.
+  return out.length ? Uint8ClampedArray.from(out) : data;
+}
+
 // A white line over a dark line, so the mark shows on any colour.
+// Circles are drawn at least 6 screen pixels across the radius so tiny
+// precise picks stay visible.
 function drawMark(ctx, shape, k, px) {
   const path = new Path2D();
   if (shape.type === "circle") {
-    path.arc(shape.x * k, shape.y * k, shape.r * k, 0, Math.PI * 2);
+    path.arc(shape.x * k, shape.y * k, Math.max(shape.r * k, 6 * px), 0, Math.PI * 2);
   } else {
     path.rect(shape.x * k, shape.y * k, shape.w * k, shape.h * k);
   }
@@ -286,7 +331,7 @@ function drawLabel(ctx, shape, k, px, text) {
   const r = 10 * px;
   let x, y;
   if (shape.type === "circle") {
-    const d = shape.r * k * Math.SQRT1_2;
+    const d = Math.max(shape.r * k, 6 * px) * Math.SQRT1_2;
     x = shape.x * k + d + r * 0.6;
     y = shape.y * k - d - r * 0.6;
   } else {

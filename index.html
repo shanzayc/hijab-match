@@ -60,7 +60,13 @@
       <div id="addPanel" class="photo-panel" hidden>
         <div class="panel-head">
           <h2>New hijab</h2>
-          <button id="addCancel" class="btn-text" type="button">Cancel</button>
+          <div class="panel-actions">
+            <button id="hijabZoom" class="btn btn-secondary btn-small" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6" /></svg>
+              Zoom in
+            </button>
+            <button id="addCancel" class="btn-text" type="button">Cancel</button>
+          </div>
         </div>
         <canvas id="hijabCanvas" class="photo-canvas"></canvas>
         <p id="pickHint" class="panel-hint">Tap the fabric, or drag a box over it.</p>
@@ -122,10 +128,16 @@
       <div id="outfitPanel" class="photo-panel" hidden>
         <div class="panel-head">
           <h2>Your outfit</h2>
-          <button id="outfitClear" class="btn-text" type="button">Clear</button>
+          <div class="panel-actions">
+            <button id="outfitZoom" class="btn btn-secondary btn-small" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4.5 4.5M10.5 7.5v6M7.5 10.5h6" /></svg>
+              Zoom in
+            </button>
+            <button id="outfitClear" class="btn-text" type="button">Clear</button>
+          </div>
         </div>
         <canvas id="outfitCanvas" class="photo-canvas"></canvas>
-        <p id="outfitHint" class="panel-hint">Tap up to 3 pieces of clothing, like your top, skirt or dress. For a pattern, drag a box over it.</p>
+        <p id="outfitHint" class="panel-hint">Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, zoom in.</p>
         <ol id="pieceList" class="piece-list" hidden></ol>
         <button id="findMatches" class="btn btn-primary" type="button" hidden>Find my hijab</button>
       </div>
@@ -188,6 +200,28 @@
       Match
     </button>
   </nav>
+
+  <dialog id="zoomDialog" class="zoom" aria-labelledby="zoomTitle">
+    <div class="zoom-bar">
+      <h2 id="zoomTitle">Pick a colour</h2>
+      <button id="zoomDone" class="btn btn-primary btn-small" type="button">Done</button>
+    </div>
+    <div id="zoomScroller" class="zoom-scroller">
+      <canvas id="zoomCanvas" class="zoom-canvas"></canvas>
+    </div>
+    <div class="zoom-foot">
+      <p id="zoomStatus" class="zoom-status" role="status"></p>
+      <div class="zoom-controls">
+        <button id="zoomOut" class="btn btn-secondary btn-small" type="button" aria-label="Zoom out">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+        </button>
+        <span id="zoomLevel" class="zoom-level">2×</span>
+        <button id="zoomIn" class="btn btn-secondary btn-small" type="button" aria-label="Zoom in">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
+        </button>
+      </div>
+    </div>
+  </dialog>
 
   <script type="module" src="app.js"></script>
 </body>

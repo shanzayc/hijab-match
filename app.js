@@ -6,6 +6,7 @@ import { PhotoPicker } from "./picker.js";
 import { loadCloset, saveCloset, newId } from "./storage.js";
 import { suggestName } from "./names.js";
 import { rankCloset } from "./match.js";
+import { ZoomViewer } from "./zoom.js";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const scrollBehavior = reduceMotion ? "auto" : "smooth";
@@ -77,6 +78,21 @@ function roundLab(lab) {
 }
 
 // ---------------------------------------------------------------
+// Zoom view, shared by the closet and outfit photos
+// ---------------------------------------------------------------
+const zoom = new ZoomViewer({
+  dialog: document.getElementById("zoomDialog"),
+  scroller: document.getElementById("zoomScroller"),
+  canvas: document.getElementById("zoomCanvas"),
+  title: document.getElementById("zoomTitle"),
+  status: document.getElementById("zoomStatus"),
+  level: document.getElementById("zoomLevel"),
+  zoomIn: document.getElementById("zoomIn"),
+  zoomOut: document.getElementById("zoomOut"),
+  done: document.getElementById("zoomDone"),
+});
+
+// ---------------------------------------------------------------
 // Closet: adding a hijab
 // ---------------------------------------------------------------
 let closet = loadCloset();
@@ -134,6 +150,18 @@ function closeAddPanel() {
 }
 
 document.getElementById("addCancel").addEventListener("click", closeAddPanel);
+
+document.getElementById("hijabZoom").addEventListener("click", () => {
+  zoom.open(hijabPicker, {
+    title: "Pick the hijab's colour",
+    hint: "Drag to move around. Tap the exact spot you want.",
+    describe(result, picker) {
+      if (result !== "added") return "Couldn't read that spot. Try another one.";
+      const pick = picker.picks[0];
+      return `Picked ${suggestName(pick.lab)} (${pick.hex}). Tap again to change it, or tap Done.`;
+    },
+  });
+});
 
 function saveNewHijab() {
   const pick = hijabPicker.picks[0];
@@ -307,7 +335,7 @@ const resultGroups = document.getElementById("resultGroups");
 const seeAll = document.getElementById("seeAll");
 
 const OUTFIT_HINT =
-  "Tap up to 3 pieces of clothing, like your top, skirt or dress. For a pattern, drag a box over it.";
+  "Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, zoom in.";
 const MAX_PIECES = 3;
 
 const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), {
@@ -374,6 +402,21 @@ wirePhotoInputs(
     outfitPanel.scrollIntoView({ behavior: scrollBehavior, block: "start" });
   }
 );
+
+document.getElementById("outfitZoom").addEventListener("click", () => {
+  zoom.open(outfitPicker, {
+    title: "Pick outfit colours",
+    hint: "Drag to move around. Tap a piece of clothing, or a small detail like a dot in a pattern.",
+    describe(result, picker) {
+      if (result === "full") return "That's 3 pieces. Tap Done, then remove one to pick another.";
+      if (result !== "added") return "Couldn't read that spot. Try another one.";
+      const n = picker.picks.length;
+      const pick = picker.picks[n - 1];
+      const next = n < MAX_PIECES ? "Tap another piece, or tap Done." : "That's 3. Tap Done.";
+      return `Piece ${n}: ${suggestName(pick.lab)} (${pick.hex}). ${next}`;
+    },
+  });
+});
 
 document.getElementById("outfitClear").addEventListener("click", () => {
   outfitPicker.clearPicks();
