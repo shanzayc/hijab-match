@@ -58,6 +58,7 @@ const NAMED = [
   ["sage", "#a2b089"],
   ["pistachio", "#c3d69b"],
   ["lime green", "#9bc53d"],
+  ["chartreuse", "#a9b836"],
   ["khaki", "#a89c6b"],
   ["olive", "#6b6a30"],
   ["army green", "#4b5320"],

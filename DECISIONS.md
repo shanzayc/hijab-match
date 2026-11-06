@@ -27,3 +27,23 @@ The main choices behind Hijab Match, and why I made them.
 **Why not just make every tap precise?** For normal taps, "the most common colour" is what you want. It ignores shadows, folds and shiny spots. So normal taps stay forgiving, and zoom is for when you really mean one exact spot.
 
 **How I know it works:** on a test photo of a white dress with blue dots, a normal tap on a dot gives white, and a zoomed tap on the same dot gives royal blue.
+
+## 3. Tuning the matching rules from real tests
+
+**The problem:** in my first real test (9 outfits, 15 hijabs), the top pick was always fine, but every hijab got at least 1 star for almost every outfit, and about 3 per outfit that I'd never wear got 2 or 3 stars. The app wasn't helping me choose. Details are in [TESTING.md](TESTING.md).
+
+**What I learned from my notes:** the colour wheel isn't enough. A hijab that's much brighter than the outfit looks wrong even when the maths says the colours go together (neon orange with a burnt orange top). Neutrals, including dark ones like navy and brown, only work when they echo something in the outfit.
+
+**What I changed:** a brightness limit on every colour-wheel rule, neutrals that must echo the outfit, opposite colours capped at 2 stars, and no "pop of colour" points unless the whole outfit is neutral.
+
+**How I know it worked:** I turned my 9 outfits into automated tests. Rejected hijabs at 2 or 3 stars went from 21 to 3, liked hijabs below 2 stars from 3 to 0, and hijabs with stars per outfit from 15 to about 8. Since the rules were tuned on those same outfits, round 2 tests new ones.
+
+## 4. Fixing colours from indoor lighting
+
+**The problem:** photos taken under warm lamps shift every colour toward yellow and orange. My olive hijab was saved as cream, sage as sand, and a chartreuse drape read as camel, which then produced wrong matches.
+
+**What I built:** a "Fix lighting" button. You tap something in the photo that should be white or light grey, like a wall or paper. The app measures how far off it is and rescales each colour channel so that spot becomes neutral, the same idea as a camera's white balance, then re-reads your picks.
+
+**Why manual and not automatic:** automatic white balance guesses that the average of the photo is grey, which fails for exactly the photos this app sees: a colourful outfit filling the frame. One tap on something white is reliable.
+
+**How I know it works:** on simulated lamp-lit photos, sage went from "khaki" to "sage", grey from "khaki" to "grey", navy from "black" to "navy", and a chartreuse drape from "yellow" to "chartreuse".

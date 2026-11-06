@@ -11,12 +11,12 @@ const WHITE = { x: 0.95047, y: 1.0, z: 1.08883 };
 // Dark pixels are kept so black hijabs still work.
 const GLARE_L = 97;
 
-function srgbToLinear(c) {
+export function srgbToLinear(c) {
   c /= 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
-function linearToSrgb(c) {
+export function linearToSrgb(c) {
   const v = c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
   return Math.round(Math.min(1, Math.max(0, v)) * 255);
 }

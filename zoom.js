@@ -2,7 +2,8 @@
 //
 // The photo is shown from the picker's 1600 px detail copy at 1x to 4x.
 // Dragging scrolls around (the browser handles it, so it feels native);
-// a tap without movement picks the colour of that exact spot.
+// a tap without movement picks the colour of that exact spot, and a tap
+// on an existing mark removes that pick.
 
 const LEVELS = [1, 2, 3, 4];
 const START_LEVEL = 2;
@@ -10,6 +11,9 @@ const START_LEVEL = 2;
 const PRECISE_RADIUS = 4;
 // More movement than this (screen pixels) means the finger was scrolling.
 const TAP_SLOP = 8;
+// Marks are drawn at least this big (screen pixels) so they're easy to
+// see and to tap again to remove.
+const MARK_RADIUS = 14;
 
 export class ZoomViewer {
   constructor({ dialog, scroller, canvas, title, status, level, zoomIn, zoomOut, done }) {
@@ -47,7 +51,8 @@ export class ZoomViewer {
   }
 
   // picker: the PhotoPicker whose photo to show.
-  // describe(result, picker): the status line to show after a pick.
+  // describe(result, picker, index): the status line after a tap. result
+  // is "added", "full", "none" or "removed" (index = which pick).
   open(picker, { title, hint, describe }) {
     if (!picker.detail) return;
     this.picker = picker;
@@ -102,7 +107,7 @@ export class ZoomViewer {
     const shown = this.canvas.offsetWidth || detail.width;
     const px = detail.width / shown; // canvas pixels per screen pixel
     const k = detail.width / this.picker.work.width; // work px -> canvas px
-    this.picker.drawMarks(this.ctx, k, px);
+    this.picker.drawMarks(this.ctx, k, px, MARK_RADIUS);
   }
 
   #pick(e) {
@@ -110,6 +115,17 @@ export class ZoomViewer {
     const scale = this.canvas.width / rect.width; // canvas px per screen px
     const x = (e.clientX - rect.left) * scale;
     const y = (e.clientY - rect.top) * scale;
+
+    // A tap on an existing mark removes that pick.
+    const k = this.canvas.width / this.picker.work.width; // work px -> canvas px
+    const hit = this.picker.pickAt(x / k, y / k, (MARK_RADIUS * scale) / k);
+    if (hit >= 0) {
+      this.picker.removePick(hit);
+      this.status.textContent = this.describe("removed", this.picker, hit);
+      this.#redraw();
+      return;
+    }
+
     // Never sample less than a couple of photo pixels, even at 4x.
     const r = Math.max(1.5, PRECISE_RADIUS * scale);
     const result = this.picker.pickPrecise(x, y, r);

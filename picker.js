@@ -9,8 +9,14 @@
 //   detail  - at most 1600 px, for the zoom view. Small details such
 //             as dots in a pattern survive at this size, and zoomed-in
 //             picks sample from it.
+//
+// Lighting correction: tapping something that should be white or light
+// grey sets a white point. All three copies are rebuilt from untouched
+// originals with each colour channel scaled so that spot becomes
+// neutral (the same idea as a camera's white balance), and existing
+// picks are re-read from the corrected photo.
 
-import { dominantColour, labToHex, rgbToLab } from "./color.js";
+import { dominantColour, labToHex, rgbToLab, srgbToLinear, linearToSrgb } from "./color.js";
 
 const WORK_MAX = 400;
 const DISPLAY_MAX = 800;
@@ -36,6 +42,35 @@ function loadImage(url) {
 // images (such as a saved 150 px thumbnail being re-picked) are enlarged
 // so they show at a usable size and taps cover the same share of the
 // picture as on a full photo.
+// Lookup tables for fast white balance over millions of pixels.
+const TO_LINEAR = Float32Array.from({ length: 256 }, (_, i) => srgbToLinear(i));
+const STEPS = 4096;
+const TO_SRGB = Uint8ClampedArray.from({ length: STEPS + 1 }, (_, i) => linearToSrgb(i / STEPS));
+
+function copyCanvas(src) {
+  const out = document.createElement("canvas");
+  out.width = src.width;
+  out.height = src.height;
+  out.getContext("2d").drawImage(src, 0, 0);
+  return out;
+}
+
+// Redraw dst from src, scaling each channel in linear light by gains.
+function applyGains(src, dst, gains) {
+  const ctx = dst.getContext("2d");
+  ctx.drawImage(src, 0, 0);
+  if (!gains) return;
+  const img = ctx.getImageData(0, 0, dst.width, dst.height);
+  const d = img.data;
+  const [gr, gg, gb] = gains;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = TO_SRGB[Math.min(STEPS, Math.round(TO_LINEAR[d[i]] * gr * STEPS))];
+    d[i + 1] = TO_SRGB[Math.min(STEPS, Math.round(TO_LINEAR[d[i + 1]] * gg * STEPS))];
+    d[i + 2] = TO_SRGB[Math.min(STEPS, Math.round(TO_LINEAR[d[i + 2]] * gb * STEPS))];
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
 function scaledCanvas(img, maxSide) {
   const scale = maxSide / Math.max(img.naturalWidth, img.naturalHeight);
   const canvas = document.createElement("canvas");
@@ -51,13 +86,21 @@ export class PhotoPicker {
   // maxPicks: how many colours can be picked at once. 0 turns picking off.
   // replaceWhenFull: when the limit is reached, a new pick replaces the
   // oldest (true) or is refused and onFull is called (false).
-  constructor(canvas, { maxPicks = 1, replaceWhenFull = true, onChange = () => {}, onFull = () => {} } = {}) {
+  // onWhite(result) reports a lighting-correction tap: "ok", "too-dark"
+  // or "too-colourful".
+  constructor(
+    canvas,
+    { maxPicks = 1, replaceWhenFull = true, onChange = () => {}, onFull = () => {}, onWhite = () => {} } = {}
+  ) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.maxPicks = maxPicks;
     this.replaceWhenFull = replaceWhenFull;
     this.onChange = onChange;
     this.onFull = onFull;
+    this.onWhite = onWhite;
+    this.choosingWhite = false;
+    this.whiteGains = null;
     this.work = null;
     this.workCtx = null;
     this.base = null;
@@ -86,6 +129,9 @@ export class PhotoPicker {
     this.base = scaledCanvas(img, DISPLAY_MAX);
     this.detail = scaledCanvas(img, DETAIL_MAX);
     this.detailCtx = this.detail.getContext("2d", { willReadFrequently: true });
+    this.originals = { work: copyCanvas(this.work), base: copyCanvas(this.base), detail: copyCanvas(this.detail) };
+    this.whiteGains = null;
+    this.choosingWhite = false;
     this.canvas.width = this.base.width;
     this.canvas.height = this.base.height;
     this.picks = [];
@@ -106,6 +152,96 @@ export class PhotoPicker {
     this.onChange(this.picks);
   }
 
+  // ---------------------------------------------------------------
+  // Lighting correction
+  // ---------------------------------------------------------------
+  // The next tap marks something that should be white or light grey.
+  chooseWhite(on) {
+    this.choosingWhite = Boolean(on && this.work);
+  }
+
+  get lightingFixed() {
+    return this.whiteGains !== null;
+  }
+
+  clearWhite() {
+    this.choosingWhite = false;
+    if (!this.whiteGains) return;
+    this.whiteGains = null;
+    this.#rebuild();
+  }
+
+  #setWhiteFrom(shape) {
+    const o = this.originals.work;
+    const data = pixelsIn(o.getContext("2d"), o.width, o.height, shape);
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += TO_LINEAR[data[i]];
+      g += TO_LINEAR[data[i + 1]];
+      b += TO_LINEAR[data[i + 2]];
+      n++;
+    }
+    r /= n; g /= n; b /= n;
+    const [L, a, bb] = rgbToLab(linearToSrgb(r), linearToSrgb(g), linearToSrgb(b));
+    // Too dark to judge the light by, or so colourful it can't have
+    // been white or grey under any normal lighting.
+    if (L < 35) return "too-dark";
+    if (Math.hypot(a, bb) > 40) return "too-colourful";
+    const avg = (r + g + b) / 3;
+    const limit = (x) => Math.min(2, Math.max(0.5, x));
+    this.whiteGains = [limit(avg / r), limit(avg / g), limit(avg / b)];
+    this.#rebuild();
+    return "ok";
+  }
+
+  // Rebuild the three copies from the originals with the current white
+  // point, then re-read every pick from the corrected photo.
+  #rebuild() {
+    applyGains(this.originals.work, this.work, this.whiteGains);
+    applyGains(this.originals.base, this.base, this.whiteGains);
+    applyGains(this.originals.detail, this.detail, this.whiteGains);
+    for (const pick of this.picks) {
+      const lab = pick.precise ? this.#samplePrecise(pick.shape) : this.#sampleWork(pick.shape);
+      if (lab) {
+        pick.lab = lab;
+        pick.hex = labToHex(lab);
+      }
+    }
+    this.#redraw();
+    this.onChange(this.picks);
+  }
+
+  #sampleWork(shape) {
+    return dominantColour(pixelsIn(this.workCtx, this.work.width, this.work.height, shape));
+  }
+
+  // shape in work pixels; samples the detail copy around its centre.
+  #samplePrecise(shape) {
+    const W = this.detail.width;
+    const H = this.detail.height;
+    const k = W / this.work.width;
+    const x = shape.x * k;
+    const y = shape.y * k;
+    const [cr, cg, cb] = this.detailCtx
+      .getImageData(clamp(Math.floor(x), 0, W - 1), clamp(Math.floor(y), 0, H - 1), 1, 1).data;
+    const pixels = pixelsIn(this.detailCtx, W, H, { type: "circle", x, y, r: shape.r * k });
+    return dominantColour(pixels, { centre: rgbToLab(cr, cg, cb) });
+  }
+
+  // Index of the pick whose mark covers a point given in work pixels,
+  // or -1. minR is the smallest radius (work pixels) a mark is drawn at.
+  pickAt(x, y, minR = 0) {
+    for (let i = this.picks.length - 1; i >= 0; i--) {
+      const s = this.picks[i].shape;
+      if (s.type === "circle") {
+        if (Math.hypot(x - s.x, y - s.y) <= Math.max(s.r, minR)) return i;
+      } else if (x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   // A precise pick from the zoom view, in detail-copy pixels. Samples a
   // small circle and keeps the colour of the exact spot tapped, even
   // when it isn't the most common colour around it.
@@ -116,38 +252,32 @@ export class PhotoPicker {
       this.onFull();
       return "full";
     }
-    const W = this.detail.width;
-    const H = this.detail.height;
-    const cx = clamp(Math.floor(x), 0, W - 1);
-    const cy = clamp(Math.floor(y), 0, H - 1);
-    const [cr, cg, cb] = this.detailCtx.getImageData(cx, cy, 1, 1).data;
-    const pixels = pixelsIn(this.detailCtx, W, H, { type: "circle", x, y, r });
-    const lab = dominantColour(pixels, { centre: rgbToLab(cr, cg, cb) });
-    if (!lab) return "none";
-
     // Store the shape in work pixels, like every other pick.
-    const k = W / this.work.width;
+    const k = this.detail.width / this.work.width;
     const shape = { type: "circle", x: x / k, y: y / k, r: r / k };
-    return this.#addPick(shape, lab);
+    const lab = this.#samplePrecise(shape);
+    if (!lab) return "none";
+    return this.#addPick(shape, lab, true);
   }
 
   // Draw every pick's mark (and number, when several are allowed) onto
   // another canvas. k converts work pixels to that canvas's pixels; px is
   // that canvas's pixels per screen pixel.
-  drawMarks(ctx, k, px) {
+  // minR is the smallest radius, in screen pixels, a circle is drawn at.
+  drawMarks(ctx, k, px, minR = 6) {
     this.picks.forEach((pick, i) => {
-      drawMark(ctx, pick.shape, k, px);
-      if (this.maxPicks > 1) drawLabel(ctx, pick.shape, k, px, String(i + 1));
+      drawMark(ctx, pick.shape, k, px, minR);
+      if (this.maxPicks > 1) drawLabel(ctx, pick.shape, k, px, String(i + 1), minR);
     });
   }
 
-  #addPick(shape, lab) {
+  #addPick(shape, lab, precise = false) {
     if (this.picks.length >= this.maxPicks && !this.replaceWhenFull) {
       this.#redraw(); // clear any drag box
       this.onFull();
       return "full";
     }
-    this.picks.push({ shape, lab, hex: labToHex(lab) });
+    this.picks.push({ shape, lab, hex: labToHex(lab), precise });
     if (this.picks.length > this.maxPicks) this.picks.shift();
     this.#redraw();
     this.onChange(this.picks);
@@ -232,13 +362,21 @@ export class PhotoPicker {
     }
     if (!shape) shape = { type: "circle", x: g.start.x, y: g.start.y, r: TAP_RADIUS };
 
+    if (this.choosingWhite) {
+      const result = this.#setWhiteFrom(shape);
+      if (result === "ok") this.choosingWhite = false;
+      else this.#redraw(); // clear any drag box
+      this.onWhite(result);
+      return;
+    }
+
     if (this.picks.length >= this.maxPicks && !this.replaceWhenFull) {
       this.#redraw(); // clear the drag box
       this.onFull();
       return;
     }
 
-    const lab = dominantColour(pixelsIn(this.workCtx, this.work.width, this.work.height, shape));
+    const lab = this.#sampleWork(shape);
     if (lab) this.#addPick(shape, lab);
     else this.#redraw();
   }
@@ -315,12 +453,12 @@ function pixelsIn(ctx, W, H, shape) {
 }
 
 // A white line over a dark line, so the mark shows on any colour.
-// Circles are drawn at least 6 screen pixels across the radius so tiny
+// Circles are drawn at least minR screen pixels across the radius so tiny
 // precise picks stay visible.
-function drawMark(ctx, shape, k, px) {
+function drawMark(ctx, shape, k, px, minR = 6) {
   const path = new Path2D();
   if (shape.type === "circle") {
-    path.arc(shape.x * k, shape.y * k, Math.max(shape.r * k, 6 * px), 0, Math.PI * 2);
+    path.arc(shape.x * k, shape.y * k, Math.max(shape.r * k, minR * px), 0, Math.PI * 2);
   } else {
     path.rect(shape.x * k, shape.y * k, shape.w * k, shape.h * k);
   }
@@ -334,11 +472,11 @@ function drawMark(ctx, shape, k, px) {
 
 // A numbered badge at the mark's top-right corner, so it labels the
 // mark without hiding the area that was sampled. Kept inside the photo.
-function drawLabel(ctx, shape, k, px, text) {
+function drawLabel(ctx, shape, k, px, text, minR = 6) {
   const r = 10 * px;
   let x, y;
   if (shape.type === "circle") {
-    const d = Math.max(shape.r * k, 6 * px) * Math.SQRT1_2;
+    const d = Math.max(shape.r * k, minR * px) * Math.SQRT1_2;
     x = shape.x * k + d + r * 0.6;
     y = shape.y * k - d - r * 0.6;
   } else {

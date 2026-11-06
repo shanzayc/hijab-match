@@ -91,6 +91,47 @@ function roundLab(lab) {
 }
 
 // ---------------------------------------------------------------
+// Lighting correction, shared by the closet and outfit photos
+// ---------------------------------------------------------------
+const LIGHTING_IDLE = "Taken under a lamp?";
+
+// Wires a "Fix lighting" button to a picker. Returns the picker's
+// onWhite handler and a reset for when a new photo loads.
+function lightingControls(button, status, getPicker) {
+  function show(text, active, label) {
+    status.textContent = text;
+    status.classList.toggle("is-active", active);
+    button.textContent = label;
+  }
+  function reset() {
+    show(LIGHTING_IDLE, false, "Fix lighting");
+  }
+  button.addEventListener("click", () => {
+    const picker = getPicker();
+    if (picker.lightingFixed) {
+      picker.clearWhite();
+      reset();
+    } else if (picker.choosingWhite) {
+      picker.chooseWhite(false);
+      reset();
+    } else {
+      picker.chooseWhite(true);
+      show("Tap something white or light grey, like a wall or paper.", true, "Cancel");
+    }
+  });
+  function onWhite(result) {
+    if (result === "ok") {
+      show("Lighting fixed.", false, "Undo");
+    } else if (result === "too-dark") {
+      show("Too dark. Tap something white or light grey.", true, "Cancel");
+    } else {
+      show("Too colourful. Tap something white or light grey.", true, "Cancel");
+    }
+  }
+  return { onWhite, reset };
+}
+
+// ---------------------------------------------------------------
 // Zoom view, shared by the closet and outfit photos
 // ---------------------------------------------------------------
 const zoom = new ZoomViewer({
@@ -149,8 +190,15 @@ hijabName.addEventListener("input", () => {
   nameEdited = hijabName.value.trim() !== "";
 });
 
+const hijabLighting = lightingControls(
+  document.getElementById("hijabLight"),
+  document.getElementById("hijabLightStatus"),
+  () => hijabPicker
+);
+
 const hijabPicker = new PhotoPicker(document.getElementById("hijabCanvas"), {
   maxPicks: 1,
+  onWhite: (result) => hijabLighting.onWhite(result),
   onChange(picks) {
     const pick = picks[0];
     pickResult.hidden = !pick;
@@ -169,6 +217,7 @@ wirePhotoInputs(
   [document.getElementById("hijabCamera"), document.getElementById("hijabGallery")],
   hijabPicker,
   () => {
+    hijabLighting.reset();
     if (editing) {
       // A new photo of the hijab being edited: keep its name.
       editing.newPhoto = true;
@@ -199,6 +248,7 @@ async function startColourEdit(item) {
     showError("Couldn't open that hijab's picture. Try taking a new photo of it.");
     return;
   }
+  hijabLighting.reset();
   editing = { item, newPhoto: false };
   setPanelMode(item);
   hijabName.value = item.name;
@@ -213,8 +263,9 @@ document.getElementById("addCancel").addEventListener("click", closeAddPanel);
 document.getElementById("hijabZoom").addEventListener("click", () => {
   zoom.open(hijabPicker, {
     title: "Pick the hijab's colour",
-    hint: "Drag to move around. Tap the exact spot you want.",
+    hint: "Drag to move around. Tap the exact spot you want. Tap the circle again to remove it.",
     describe(result, picker) {
+      if (result === "removed") return "Removed. Tap the exact spot you want.";
       if (result !== "added") return "Couldn't read that spot. Try another one.";
       const pick = picker.picks[0];
       return `Picked ${suggestName(pick.lab)} (${pick.hex}). Tap again to change it, or tap Done.`;
@@ -426,10 +477,17 @@ const OUTFIT_HINT =
   "Tap up to 3 pieces, like your top or skirt. For a pattern, drag a box over it. For a tiny detail, use Zoom.";
 const MAX_PIECES = 3;
 
+const outfitLighting = lightingControls(
+  document.getElementById("outfitLight"),
+  document.getElementById("outfitLightStatus"),
+  () => outfitPicker
+);
+
 const outfitPicker = new PhotoPicker(document.getElementById("outfitCanvas"), {
   maxPicks: MAX_PIECES,
   replaceWhenFull: false,
   onChange: renderPieces,
+  onWhite: (result) => outfitLighting.onWhite(result),
   onFull() {
     outfitHint.textContent = "Up to 3 pieces. Remove one to add another.";
   },
@@ -485,6 +543,7 @@ wirePhotoInputs(
   [document.getElementById("outfitCamera"), document.getElementById("outfitGallery")],
   outfitPicker,
   () => {
+    outfitLighting.reset();
     matchEmpty.hidden = true;
     outfitPanel.hidden = false;
     outfitPanel.scrollIntoView({ behavior: scrollBehavior, block: "start" });
@@ -494,9 +553,10 @@ wirePhotoInputs(
 document.getElementById("outfitZoom").addEventListener("click", () => {
   zoom.open(outfitPicker, {
     title: "Pick outfit colours",
-    hint: "Drag to move around. Tap a piece of clothing, or a small detail like a dot in a pattern.",
-    describe(result, picker) {
-      if (result === "full") return "That's 3 pieces. Tap Done, then remove one to pick another.";
+    hint: "Drag to move around. Tap a piece of clothing or a small detail. Tap a circle again to remove it.",
+    describe(result, picker, index) {
+      if (result === "removed") return `Removed piece ${index + 1}. Tap another spot, or tap Done.`;
+      if (result === "full") return "That's 3 pieces. Tap a circle to remove one, then pick again.";
       if (result !== "added") return "Couldn't read that spot. Try another one.";
       const n = picker.picks.length;
       const pick = picker.picks[n - 1];

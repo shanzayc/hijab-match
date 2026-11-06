@@ -774,6 +774,28 @@ main {
   grid-column: 1 / -1;
 }
 
+.lighting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 14px;
+}
+
+.lighting .btn-text {
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.lighting-status {
+  color: var(--text-muted);
+}
+
+.lighting-status.is-active {
+  color: var(--text);
+  font-weight: 500;
+}
+
 .current-colour {
   display: flex;
   align-items: center;

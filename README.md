@@ -2,7 +2,7 @@
 
 Recommends which hijab from your own collection best matches an outfit photo. A phone-first web app that uses the camera, needs no account, and keeps every photo on the device.
 
-**Status:** in progress (Day 4 of 7). Build a closet of your hijabs, photograph an outfit, tap up to 3 pieces, and get your hijabs ranked 3, 2 or 1 stars with a reason for each.
+**Status:** working and tested (round 1 complete; round 2 next). Build a closet of your hijabs, photograph an outfit, tap up to 3 pieces, and get your hijabs ranked 3, 2 or 1 stars with a reason for each.
 
 **Live app:** <https://shanzayc.github.io/hijab-match/>
 
@@ -14,9 +14,22 @@ Growing up, I always wore a black hijab. It went with everything, but it was als
 
 1. Photograph each hijab once and tap the fabric. The app reads its colour and suggests a name.
 2. Photograph an outfit and tap up to 3 pieces. Zoom in to pick a tiny detail, like a dot in a pattern.
-3. Every hijab is scored against the outfit with colour rules (same colour, lighter or darker shade, complementary, neighbouring, neutral) and grouped into 3, 2 or 1 stars, each with a reason.
+3. Every hijab is scored against the outfit with colour rules (same colour, lighter or darker shade, neighbouring, bold contrast, neutrals that echo the outfit) and grouped into 3, 2 or 1 stars, each with a reason.
 
-Everything runs in the browser. There's no account, and photos never leave the phone. The reasoning behind the main technical choices is in [DECISIONS.md](DECISIONS.md).
+Photo taken under a lamp? **Fix lighting** corrects the colours: tap something white in the photo.
+
+Everything runs in the browser. There's no account, and photos never leave the phone.
+
+- [DECISIONS.md](DECISIONS.md): the reasoning behind the main choices
+- [TESTING.md](TESTING.md): how I tested it with my own closet, what I found, and what changed
+
+## Tests
+
+The colour maths and the matching rules have automated tests, including the 9 outfits from real-world testing:
+
+```bash
+node --test tests/*.test.mjs
+```
 
 ## Run locally
 
