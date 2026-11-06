@@ -6,6 +6,13 @@ Recommends which hijab from your own collection best matches an outfit photo. A 
 
 **Live app:** <https://shanzayc.github.io/hijab-match/>
 
+<p>
+  <img src="screenshots/closet.jpg" width="200" alt="The closet screen: a grid of saved hijabs, each with its colour">
+  <img src="screenshots/pick-colours.jpg" width="200" alt="An outfit photo with three pieces tapped: grey, charcoal and red">
+  <img src="screenshots/results.jpg" width="200" alt="Results grouped into 3, 2 and 1 stars, each hijab with a reason">
+  <img src="screenshots/zoom.jpg" width="200" alt="The zoom view for picking a small detail in the outfit">
+</p>
+
 ## Why I built this
 
 Growing up, I always wore a black hijab. It went with everything, but it was also a way to hide. I built Hijab Match for girls who want to wear more than black and feel confident doing it: it finds the hijab in your own closet that pulls an outfit together, and sometimes suggests a colour you wouldn't have tried.
@@ -22,6 +29,7 @@ Everything runs in the browser. There's no account, and photos never leave the p
 
 - [DECISIONS.md](DECISIONS.md): the reasoning behind the main choices
 - [TESTING.md](TESTING.md): how I tested it with my own closet, what I found, and what changed
+- [TEST-LOG.md](TEST-LOG.md): my raw test notes for every outfit, as I wrote them
 - [Privacy policy](https://shanzayc.github.io/hijab-match/privacy.html) and [terms of use](https://shanzayc.github.io/hijab-match/terms.html)
 
 On a phone, add it to your home screen to open it like an app (Safari: Share, then Add to Home Screen).
