@@ -83,8 +83,52 @@ My 9 outfits are now automated tests (`tests/matching.test.mjs`), so every chang
 
 The 3 rejected hijabs still at 2 or 3 stars are all caused by colours the app read wrong (the chartreuse drape read as camel, and a chocolate plum hijab saved too purple), which is what Fix lighting addresses. With the drape's true colour, outfit 9 has none.
 
-**Caveat:** these numbers come from the same 9 outfits the rules were tuned on, so they're optimistic. Round 2 (below) uses new outfits.
+**Caveat:** these numbers come from the same 9 outfits the rules were tuned on, so they're optimistic. Round 2 (below) adds new outfits.
 
-## Round 2
+## Round 2 results (after tuning)
 
-To do: re-take the olive and sage hijabs in daylight, then test new outfits, especially colourful ones, with the same method.
+Same closet, same method, 8 outfits: 4 new ones the rules were never tuned on, and 4 repeats of round 1 photos for a before and after. I used Fix lighting on 6 of the 8.
+
+| Measure | Round 1 | Round 2 | Round 2, new outfits only |
+| --- | --- | --- | --- |
+| Outfits tested | 9 | 8 | 4 |
+| Top pick: My choice | 4 | 7 | 4 |
+| Top pick: Would consider | 5 | 1 | 0 |
+| Top pick: Wrong | 0 | 0 | 0 |
+| **Pass rate (target 80%)** | 9 of 9 (100%) | **8 of 8 (100%)** | **4 of 4 (100%)** |
+| My real choice got 2+ stars | 9 of 9 | 8 of 8 | 4 of 4 |
+| **Hijabs I wouldn't wear in the results** | 23 at 2 to 3 stars (about 3 per outfit) | **7 at 2 stars (under 1 per outfit)** | 3 |
+| Issues logged | 7 | 5 | |
+
+In round 2 I counted the hijabs I wouldn't wear in the 2-star group; the 3-star picks were all ones I'd wear or consider.
+
+**The main finding:** the app now narrows the closet down instead of approving everything. The top pick went from mostly "Would consider" to "My choice" for 7 of 8 outfits. On a busy black, green and beige dress it recommended only 3 of 15 hijabs, all good ones, and for a hot pink dress it marked 11 of 15 as not a match.
+
+On the 4 repeated outfits, hijabs I wouldn't wear went from 13 to 4. The navy dress with the chartreuse drape, which the app misread in round 1, went from 4 to none with Fix lighting.
+
+## Round 2 outfit tests
+
+| # | Outfit | Lighting | Fix lighting | App's top pick (stars) | Verdict | My real choice (stars) | At 2 stars, I wouldn't wear |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Repeat of round 1 #1: black and red hoodie, grey sweatpants | Daylight | Yes | Dusty rose, nude (3) | Would consider | Black (2) | 3 of 5 |
+| 2 | New: mustard yellow dress, small silver and pink details | Indoor | Yes | Light grey, taupe (3) | My choice | Taupe (3) | 2 (black, chocolate plum) |
+| 3 | Repeat of round 1 #9: navy dress, chartreuse drape | Indoor | Yes | Sand, light grey, stone, navy, taupe (3) | My choice | Navy or sand (3) | 0 |
+| 4 | Repeat of round 1 #7: hot pink dress | Indoor | Yes | Black, burgundy (3) | My choice | Black (3) | 1 (maroon) |
+| 5 | Repeat of round 1 #5: burnt orange top, grey jeans | Indoor | Yes | Taupe, sand, terracotta, stone, black, nude (2) | My choice | Taupe (2) | 0 |
+| 6 | New: black dress with dark green, light green and beige | Daylight | No | Black (3) | My choice | Black (3), would also wear sand and taupe | 0 |
+| 7 | New: hot pink and mustard dress, orange and light pink details | Indoor | No | Nude, dusty rose, sand, terracotta, burgundy (3) | My choice | Nude or sand (3) | 1 (black) |
+| 8 | New: all grey, silver details | Indoor | Yes | Light grey, stone/olive green (3) | My choice | Light grey (3) | 0 |
+
+## Round 2 issues
+
+| # | Outfit | What happened | What I expected |
+| --- | --- | --- | --- |
+| 8 | 2, 5, 7 | Black recommended with colourful outfits I wouldn't wear it with | Black ranked lower: it goes with a lot, but it isn't the best choice |
+| 9 | 2 | Nude and dusty rose were only 2 stars | One of them in the top picks |
+| 10 | 1 | Light grey was only 1 star, next to teal | Light grey higher; I wouldn't wear teal |
+| 11 | 6 | Teal was not a match | Teal could have been a match |
+| 12 | 8 | Navy was not a match for an all grey outfit | Navy as a match |
+
+**What's next:** black gets 2 stars with every outfit as a safe fallback, which is too generous for colourful outfits (issue 8, three outfits). The fix would be to keep that only for outfits that contain black or are mostly neutral. Issues 9 to 12 are one-offs, so I'm watching for them to repeat before changing the rules.
+
+**Caveat:** this is a small test (8 outfits, 4 of them new) judged only by me, so it shows the app works for my closet and taste, not for everyone.

@@ -2,7 +2,7 @@
 
 Recommends which hijab from your own collection best matches an outfit photo. A phone-first web app that uses the camera, needs no account, and keeps every photo on the device.
 
-**Status:** working and tested (round 1 complete; round 2 next). Build a closet of your hijabs, photograph an outfit, tap up to 3 pieces, and get your hijabs ranked 3, 2 or 1 stars with a reason for each.
+**Status:** working and tested in two rounds with my own closet (17 outfit tests; the top pick passed every time). Build a closet of your hijabs, photograph an outfit, tap up to 3 pieces, and get your hijabs ranked 3, 2 or 1 stars with a reason for each.
 
 **Live app:** <https://shanzayc.github.io/hijab-match/>
 

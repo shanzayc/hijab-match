@@ -36,7 +36,7 @@ The main choices behind Hijab Match, and why I made them.
 
 **What I changed:** a brightness limit on every colour-wheel rule, neutrals that must echo the outfit, opposite colours capped at 2 stars, and no "pop of colour" points unless the whole outfit is neutral.
 
-**How I know it worked:** I turned my 9 outfits into automated tests. Rejected hijabs at 2 or 3 stars went from 21 to 3, liked hijabs below 2 stars from 3 to 0, and hijabs with stars per outfit from 15 to about 8. Since the rules were tuned on those same outfits, round 2 tests new ones.
+**How I know it worked:** I turned my 9 outfits into automated tests. Rejected hijabs at 2 or 3 stars went from 21 to 3, liked hijabs below 2 stars from 3 to 0, and hijabs with stars per outfit from 15 to about 8. Since the rules were tuned on those same outfits, round 2 tested 4 new ones too: the top pick was my own choice for all 4, and hijabs I wouldn't wear in the results dropped from about 3 per outfit to under 1.
 
 ## 4. Fixing colours from indoor lighting
 
