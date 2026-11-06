@@ -124,7 +124,8 @@ svg {
 .brand-mark {
   width: 24px;
   height: 24px;
-  color: var(--accent);
+  fill: var(--accent);
+  stroke: none;
 }
 
 .brand-name {
@@ -1028,6 +1029,74 @@ main {
   border-top: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 14px;
+}
+
+/* ---------------------------------------------------------------
+   Privacy policy and terms pages
+   --------------------------------------------------------------- */
+.doc-back {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.doc-back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.doc {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px 16px calc(48px + var(--safe-bottom));
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.doc h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.doc h2 {
+  margin: 28px 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.doc p,
+.doc ul {
+  margin: 0 0 12px;
+}
+
+.doc ul {
+  padding-left: 22px;
+}
+
+.doc a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.doc-updated {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.doc-related {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* A focusable heading that receives focus when a dialog opens, so the
+   first button doesn't get a focus ring the user never asked for. */
+[tabindex="-1"]:focus {
+  outline: none;
 }
 
 /* ---------------------------------------------------------------

@@ -22,6 +22,9 @@ Everything runs in the browser. There's no account, and photos never leave the p
 
 - [DECISIONS.md](DECISIONS.md): the reasoning behind the main choices
 - [TESTING.md](TESTING.md): how I tested it with my own closet, what I found, and what changed
+- [Privacy policy](https://shanzayc.github.io/hijab-match/privacy.html) and [terms of use](https://shanzayc.github.io/hijab-match/terms.html)
+
+On a phone, add it to your home screen to open it like an app (Safari: Share, then Add to Home Screen).
 
 ## Tests
 
