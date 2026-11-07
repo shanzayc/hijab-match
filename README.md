@@ -71,6 +71,6 @@ node --test tests/*.test.mjs
 
 Made by Shanzay Chaudhry. I'd love to hear what you think.
 
-- Email: [shanzayc33@gmail.com](mailto:shanzayc@outlook.com)
+- Email: [shanzayc@outlook.com](mailto:shanzayc@outlook.com)
 - LinkedIn: [linkedin.com/in/shanzaychaudhry](https://www.linkedin.com/in/shanzaychaudhry)
 - GitHub: [@shanzayc](https://github.com/shanzayc), or [open an issue](https://github.com/shanzayc/hijab-match/issues) for bugs and ideas
