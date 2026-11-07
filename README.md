@@ -1,4 +1,5 @@
-# Hijab Match
+# <img width="512" height="512" alt="image" src="https://github.com/user-attachments/assets/13974c9b-a9ac-4664-9df5-b4ef180177fb" />
+Hijab Match
 
 Find the hijab in your own closet that goes with your outfit. Photograph the outfit, tap its colours, and Hijab Match ranks your hijabs with a reason for each. It's a phone-first web app with no account, and every photo stays on your phone.
 
@@ -71,6 +72,6 @@ node --test tests/*.test.mjs
 
 Made by Shanzay Chaudhry. I'd love to hear what you think.
 
-- Email: [shanzayc33@gmail.com](mailto:shanzayc33@gmail.com)
+- Email: [shanzayc33@gmail.com](mailto:shanzayc@outlook.com)
 - LinkedIn: [linkedin.com/in/shanzaychaudhry](https://www.linkedin.com/in/shanzaychaudhry)
 - GitHub: [@shanzayc](https://github.com/shanzayc), or [open an issue](https://github.com/shanzayc/hijab-match/issues) for bugs and ideas
