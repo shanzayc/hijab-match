@@ -14,16 +14,16 @@ Growing up, I always wore a black hijab. It went with everything, but it was als
 
 Photograph each hijab once and tap the fabric. The app reads its colour and suggests a name, which you can change.
 
-<img src="screenshots/closet.jpg" width="260" alt="The closet screen: a grid of saved hijabs, each with its colour">
+<img src="screenshots/closet.jpg" width="220" alt="The closet screen: a grid of saved hijabs, each with its colour">
 
 ### 2. Pick colours from your outfit
 
 Photograph an outfit and tap up to 3 pieces. For a tiny detail, like a dot in a pattern, zoom in and tap it there.
 
 <p>
-  <img src="screenshots/pick-colours.jpg" width="260" alt="An outfit photo with three pieces tapped: grey, charcoal and red">
+  <img src="screenshots/pick-colours.jpg" width="220" alt="An outfit photo with three pieces tapped: grey, charcoal and red">
   &nbsp;
-  <img src="screenshots/zoom.jpg" width="260" alt="The zoom view for picking a small detail in the outfit">
+  <img src="screenshots/zoom.jpg" width="220" alt="The zoom view for picking a small detail in the outfit">
 </p>
 
 Photo taken under a lamp? **Fix lighting** corrects the colours: tap something white in the photo.
@@ -32,7 +32,7 @@ Photo taken under a lamp? **Fix lighting** corrects the colours: tap something w
 
 Every hijab is scored against the outfit with colour rules (same colour, lighter or darker shade, neighbouring, bold contrast, neutrals that echo the outfit) and grouped into 3, 2 or 1 stars, each with a reason.
 
-<img src="screenshots/results.jpg" width="260" alt="Results grouped into 3, 2 and 1 stars, each hijab with a reason">
+<img src="screenshots/results.jpg" width="220" alt="Results grouped into 3, 2 and 1 stars, each hijab with a reason">
 
 Everything runs in the browser, so photos never leave the phone.
 
@@ -66,3 +66,11 @@ Then open <http://localhost:5174>. The colour maths and matching rules have auto
 ```bash
 node --test tests/*.test.mjs
 ```
+
+## Contact
+
+Made by Shanzay Chaudhry. I'd love to hear what you think.
+
+- Email: [shanzayc33@gmail.com](mailto:shanzayc33@gmail.com)
+- LinkedIn: [linkedin.com/in/shanzaychaudhry](https://www.linkedin.com/in/shanzaychaudhry)
+- GitHub: [@shanzayc](https://github.com/shanzayc), or [open an issue](https://github.com/shanzayc/hijab-match/issues) for bugs and ideas
