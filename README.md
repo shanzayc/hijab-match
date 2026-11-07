@@ -1,5 +1,4 @@
-# <img width="512" height="512" alt="image" src="https://github.com/user-attachments/assets/13974c9b-a9ac-4664-9df5-b4ef180177fb" />
-Hijab Match
+# Hijab Match
 
 Find the hijab in your own closet that goes with your outfit. Photograph the outfit, tap its colours, and Hijab Match ranks your hijabs with a reason for each. It's a phone-first web app with no account, and every photo stays on your phone.
 
