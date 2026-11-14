@@ -51,6 +51,7 @@ The full results, and what I changed because of them, are in [TESTING.md](TESTIN
 - [DECISIONS.md](DECISIONS.md): the reasoning behind the main choices
 - [TESTING.md](TESTING.md): how I tested it, what I found, and what changed
 - [TEST-LOG.md](TEST-LOG.md): my raw test notes for every outfit, as I wrote them
+- [CLAUDE.md](CLAUDE.md): the project context I give Claude Code, which I used to build this
 - [Privacy policy](https://shanzayc.github.io/hijab-match/privacy.html) and [terms of use](https://shanzayc.github.io/hijab-match/terms.html)
 
 ## Run it yourself
